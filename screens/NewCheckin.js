@@ -6,51 +6,49 @@ import {
   TouchableOpacity,
   Image,
   Animated,
+  ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function NewCheckin({ navigation }) {
-  // Animations
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const buttonPulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Initial entrance animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 800,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         tension: 50,
         friction: 7,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
     ]).start();
 
-    // Continuous pulse animation for the button
     Animated.loop(
       Animated.sequence([
         Animated.timing(buttonPulseAnim, {
           toValue: 1.05,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(buttonPulseAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ])
     ).start();
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar style="light" />
 
       {/* Header */}
@@ -66,7 +64,7 @@ export default function NewCheckin({ navigation }) {
       </View>
 
       {/* Success Content */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.centerContent,
           {
@@ -75,12 +73,10 @@ export default function NewCheckin({ navigation }) {
           }
         ]}
       >
-        {/* Success Icon */}
         <View style={styles.iconContainer}>
           <Ionicons name="checkmark-circle" size={100} color="#2563EB" />
         </View>
 
-        {/* Success Message */}
         <Text style={styles.successTitle}>Check-In</Text>
         <Text style={styles.successSubtitle}>Successful!</Text>
 
@@ -89,7 +85,7 @@ export default function NewCheckin({ navigation }) {
         </Text>
       </Animated.View>
 
-      {/* Tap to Start Another Check-In with Pulse Animation */}
+      {/* Tap to Start Another Check-In */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => navigation.navigate("Welcome")}
@@ -107,15 +103,16 @@ export default function NewCheckin({ navigation }) {
           <Text style={styles.startSub}>Check-In</Text>
         </Animated.View>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#F2F2F2",
     alignItems: "center",
+    paddingBottom: 40,
   },
   header: {
     width: "100%",
@@ -175,7 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 0,
+    marginTop: 10,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 10,
