@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   centerContent: {
     alignItems: "center",
-    marginTop: 40,
+    marginTop: 10,
   },
   title: {
     fontSize: 40,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 40,
+    marginTop: 20,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 10,
