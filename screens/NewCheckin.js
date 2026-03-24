@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   startButton: {
     width: 300,
     height: 300,
-    borderRadius: 150,
+    borderRadius: 160,
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
