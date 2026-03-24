@@ -193,7 +193,7 @@ export default function Info({ navigation }) {
               <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused, errors.email && styles.inputError]}>
                 <Ionicons name="mail-outline" size={20} color="#8a8a8a" />
                 <TextInput
-                  placeholder="e.g. jauntamad@email.com"
+                  placeholder="e.g. juantamad@email.com"
                   placeholderTextColor="#94A3B8"
                   style={styles.input}
                   keyboardType="email-address"
