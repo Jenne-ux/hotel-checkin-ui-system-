@@ -32,9 +32,8 @@ export default function WelcomeScreen({navigation}) {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar style="light" />
-
       <View style={styles.header}>
         <View style={styles.poweredBox}>
           <Text style={styles.poweredText}>Powered by</Text>
