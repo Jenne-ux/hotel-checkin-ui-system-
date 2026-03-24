@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
   },
   centerContent: {
     alignItems: "center",
-    marginTop: 60,
-    marginBottom: 40,
+    marginTop: 30,
+    marginBottom: 30,
   },
   iconContainer: {
     marginBottom: 20,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 1,
+    marginTop: 0,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 10,
