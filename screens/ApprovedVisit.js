@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 const ApprovedVisit = ({ visible, onClose, visitorName, personToVisit }) => {
   // Add this console log to verify the component renders
   console.log('ApprovedVisit rendered with props:', { visible, visitorName, personToVisit });
-
+fd
   // Animations
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
