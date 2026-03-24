@@ -6,54 +6,51 @@ import {
   TouchableOpacity,
   Image,
   Animated,
+  ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function NewVisitorReg({ navigation }) {
-  // Animations
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const buttonPulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Initial entrance animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 800,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         tension: 50,
         friction: 7,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }),
     ]).start();
 
-    // Continuous pulse animation for the button
     Animated.loop(
       Animated.sequence([
         Animated.timing(buttonPulseAnim, {
           toValue: 1.05,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(buttonPulseAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ])
     ).start();
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar style="light" />
 
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.poweredBox}>
           <Text style={styles.poweredText}>Powered by</Text>
@@ -65,57 +62,41 @@ export default function NewVisitorReg({ navigation }) {
         </View>
       </View>
 
-      {/* Success Content */}
-      <Animated.View 
-        style={[
-          styles.centerContent,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          }
-        ]}
+      <Animated.View
+        style={[styles.centerContent, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
       >
-        {/* Success Icon */}
         <View style={styles.iconContainer}>
-          <Ionicons name="checkmark-circle" size={100} color="#2563EB" />
+          <Ionicons name="checkmark-circle" size={80} color="#2563EB" />
         </View>
-
-        {/* Success Message */}
         <Text style={styles.successTitle}>Visitor Registration</Text>
         <Text style={styles.successSubtitle}>Successful!</Text>
-
         <Text style={styles.message}>
           You may now proceed to your destination. The front desk is available if you need any assistance.
         </Text>
       </Animated.View>
 
-      {/* Tap to Start Another Visitor Registration/Check-in with Pulse Animation */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => navigation.navigate("Welcome")}
       >
         <Animated.View
-          style={[
-            styles.startButton,
-            {
-              transform: [{ scale: buttonPulseAnim }],
-            },
-          ]}
+          style={[styles.startButton, { transform: [{ scale: buttonPulseAnim }] }]}
         >
           <Ionicons name="finger-print" size={70} color="white" />
           <Text style={styles.startText}>TAP TO START ANOTHER</Text>
           <Text style={styles.startSub}>Visitor Registration</Text>
         </Animated.View>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#F2F2F2",
     alignItems: "center",
+    paddingBottom: 40,
   },
   header: {
     width: "100%",
@@ -141,27 +122,28 @@ const styles = StyleSheet.create({
   },
   centerContent: {
     alignItems: "center",
-    marginTop: 60,
-    marginBottom: 40,
-  },
-  iconContainer: {
+    marginTop: 10,
     marginBottom: 20,
   },
+  iconContainer: {
+    marginBottom: 10,
+  },
   successTitle: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: "bold",
     color: "#1B2A41",
     textAlign: "center",
   },
   successSubtitle: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: "bold",
     color: "#2563EB",
     textAlign: "center",
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 10,
   },
   message: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#333",
     textAlign: "center",
     marginTop: 10,
@@ -171,11 +153,11 @@ const styles = StyleSheet.create({
   startButton: {
     width: 300,
     height: 300,
-    borderRadius: 160,
+    borderRadius: 150,
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 0,
+    marginTop: 30,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -192,6 +174,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#DDE6F2",
     textAlign: "center",
-    paddingHorizontal: 20,
   },
 });
