@@ -51,7 +51,6 @@ export default function NewCheckin({ navigation }) {
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar style="light" />
 
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.poweredBox}>
           <Text style={styles.poweredText}>Powered by</Text>
@@ -63,40 +62,23 @@ export default function NewCheckin({ navigation }) {
         </View>
       </View>
 
-      {/* Success Content */}
-      <Animated.View
-        style={[
-          styles.centerContent,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          }
-        ]}
-      >
+      <Animated.View style={[styles.centerContent, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
         <View style={styles.iconContainer}>
-          <Ionicons name="checkmark-circle" size={100} color="#2563EB" />
+          <Ionicons name="checkmark-circle" size={80} color="#2563EB" />
         </View>
-
         <Text style={styles.successTitle}>Check-In</Text>
         <Text style={styles.successSubtitle}>Successful!</Text>
-
         <Text style={styles.message}>
           Please collect your room key at the front desk. For any pending payments or assistance, please proceed to the front desk.
         </Text>
       </Animated.View>
 
-      {/* Tap to Start Another Check-In */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => navigation.navigate("Welcome")}
       >
         <Animated.View
-          style={[
-            styles.startButton,
-            {
-              transform: [{ scale: buttonPulseAnim }],
-            },
-          ]}
+          style={[styles.startButton, { transform: [{ scale: buttonPulseAnim }] }]}
         >
           <Ionicons name="finger-print" size={70} color="white" />
           <Text style={styles.startText}>TAP TO START ANOTHER</Text>
@@ -139,57 +121,55 @@ const styles = StyleSheet.create({
   centerContent: {
     alignItems: "center",
     marginTop: 10,
-    marginBottom: 10,
   },
   iconContainer: {
     marginBottom: 10,
   },
   successTitle: {
-    fontSize: 28,
+    fontSize: 40,
     fontWeight: "bold",
     color: "#1B2A41",
     textAlign: "center",
   },
   successSubtitle: {
-    fontSize: 30,
+    fontSize: 42,
     fontWeight: "bold",
     color: "#2563EB",
     textAlign: "center",
+    marginTop: 10,
     marginBottom: 10,
   },
   message: {
     fontSize: 16,
     color: "#333",
     textAlign: "center",
-    marginTop: 5,
+    marginTop: 10,
     paddingHorizontal: 30,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   startButton: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 40,
+    marginTop: 30,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 10,
   },
   startText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     color: "white",
     marginTop: 10,
     textAlign: "center",
   },
   startSub: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#DDE6F2",
     textAlign: "center",
-    paddingHorizontal: 20,
   },
 });
