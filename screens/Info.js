@@ -772,15 +772,14 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   paymentModalContainer: {
-    width: "60%",
-    maxWidth: 500,
+    width: "55%",
+    maxWidth: 480,
     backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 20,
+    padding: 14,
     alignItems: "center",
     alignSelf: "center",
-    marginVertical: 30,
-    maxHeight: "80%",
+    marginVertical: 20,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -832,7 +831,7 @@ const styles = StyleSheet.create({
   paymentOptionSelected: { backgroundColor: "#2563EB", borderColor: "#2563EB" }, // Also updated payment selection to match header
   paymentText: { marginLeft: 10, fontSize: 18, color: "#2c3e50", fontWeight: "500" },
   paymentTextSelected: { color: "#fff" },
-  summaryBox: { marginTop: 20, backgroundColor: "#f8f9fa", padding: 15, borderRadius: 12, width: "100%" },
+  summaryBox: { marginTop: 10, backgroundColor: "#f8f9fa", padding: 10, borderRadius: 12, width: "100%" },
   summaryTitle: { fontWeight: "700", color: "#2563EB", marginBottom: 15, fontSize: 14, textAlign: "center" }, // Updated to header blue
   row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12, paddingHorizontal: 5 },
   summaryLabel: { color: "#7f8c8d", fontSize: 14 },
