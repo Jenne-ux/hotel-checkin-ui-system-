@@ -16,7 +16,6 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
-import { Checkbox } from "react-native-paper";
 import QRPaymentModal from "./QR";
 import Card from "./Card";
 import Cash from "./Cash";
@@ -346,14 +345,24 @@ export default function Info({ navigation }) {
 
             {/* Checkbox - inside the same container */}
             <View style={styles.checkboxWrapper}>
-              <Checkbox
-                status={agreed ? 'checked' : 'unchecked'}
+              <TouchableOpacity
                 onPress={() => {
                   setAgreed(!agreed);
                   if (errors.agreed) setErrors({...errors, agreed: null});
                 }}
-                color="#2563EB"
-              />
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderWidth: 2,
+                  borderColor: agreed ? "#2563EB" : "#ccc",
+                  borderRadius: 4,
+                  backgroundColor: agreed ? "#2563EB" : "#fff",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {agreed && <Ionicons name="checkmark" size={16} color="#fff" />}
+              </TouchableOpacity>
               <Text style={styles.terms}>
                 By signing above, I acknowledge that the information provided is
                 accurate and I agree to the hotel's terms and conditions and privacy policy.
@@ -775,13 +784,15 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   paymentModalContainer: {
-    width: "90%",
+    width: "50%",
+    maxWidth: 500,
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
     alignSelf: "center",
-    marginVertical: 50,
+    marginVertical: 30,
+    maxHeight: "70%",
   },
   modalHeader: {
     flexDirection: 'row',
