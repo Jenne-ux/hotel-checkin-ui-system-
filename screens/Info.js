@@ -762,7 +762,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
     backgroundColor: '#fff',
@@ -773,10 +774,10 @@ const styles = StyleSheet.create({
   },
   paymentModalContainer: {
     width: "90%",
-    maxWidth: 450,
+    maxWidth: 480,
     backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 14,
+    padding: 20,
     alignItems: "center",
     alignSelf: "center",
     marginVertical: 20,
