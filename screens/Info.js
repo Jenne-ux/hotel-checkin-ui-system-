@@ -772,7 +772,7 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   paymentModalContainer: {
-    width: "100%",
+    width: "90%",
     maxWidth: 480,
     backgroundColor: "#fff",
     borderRadius: 20,
