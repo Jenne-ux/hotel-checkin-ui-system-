@@ -59,7 +59,7 @@ const ApprovedVisit = ({ visible, onClose, visitorName, personToVisit }) => {
         >
           {/* Success Icon */}
           <View style={styles.iconContainer}>
-            <Ionicons name="checkmark-circle" size={70} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={70} color="#2563EB" />
           </View>
 
           {/* Title */}

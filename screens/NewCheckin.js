@@ -85,7 +85,7 @@ export default function NewCheckin({ navigation }) {
         <Text style={styles.successSubtitle}>Successful!</Text>
 
         <Text style={styles.message}>
-          You may now proceed to your assigned room. For any pending payments or assistance, please proceed to the front desk.
+          You may now proceed to your assigned room. Please collect your room key at the front desk. For any pending payments or assistance, please proceed to the front desk.
         </Text>
       </Animated.View>
 
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   startButton: {
     width: 300,
     height: 300,
-    borderRadius: 160,
+    borderRadius: 150,
     backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
