@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   centerContent: {
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 3,
   },
   title: {
     fontSize: 40,
@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginTop: 40,
-    marginBottom: 40,
+    marginTop: 20,
+    marginBottom: 20,
     backgroundColor: "#E8F0FE",
     paddingVertical: 15,
     paddingHorizontal: 25,
