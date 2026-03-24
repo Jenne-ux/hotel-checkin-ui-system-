@@ -772,7 +772,7 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   paymentModalContainer: {
-    width: "50%",
+    width: "60%",
     maxWidth: 500,
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     marginVertical: 30,
-    maxHeight: "70%",
+    maxHeight: "80%",
   },
   modalHeader: {
     flexDirection: 'row',
