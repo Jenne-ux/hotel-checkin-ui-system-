@@ -1,6 +1,6 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 
 import WelcomeScreen from "./screens/Welcomescreen";  
 import Rooms from "./screens/Rooms";
@@ -14,7 +14,7 @@ import Approval from './screens/Approval';
 import NewVisitorReg from './screens/NewVisitorReg';
 import NewCheckin from "./screens/NewCheckin";
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 export default function App() {
   return (
