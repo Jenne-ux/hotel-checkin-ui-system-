@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   centerContent: {
     alignItems: "center",
-    marginTop: 3,
+    marginTop: 10,
   },
   title: {
     fontSize: 40,
