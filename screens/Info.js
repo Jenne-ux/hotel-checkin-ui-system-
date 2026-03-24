@@ -157,7 +157,7 @@ export default function Info({ navigation }) {
               <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused, errors.fullName && styles.inputError]}>
                 <Ionicons name="person-outline" size={20} color="#8a8a8a" />
                 <TextInput
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Juan Tamad"
                   placeholderTextColor="#94A3B8"
                   style={styles.input}
                   value={fullName}
@@ -193,7 +193,7 @@ export default function Info({ navigation }) {
               <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused, errors.email && styles.inputError]}>
                 <Ionicons name="mail-outline" size={20} color="#8a8a8a" />
                 <TextInput
-                  placeholder="e.g. johndoe@email.com"
+                  placeholder="e.g. jauntamad@email.com"
                   placeholderTextColor="#94A3B8"
                   style={styles.input}
                   keyboardType="email-address"
