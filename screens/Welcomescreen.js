@@ -21,12 +21,12 @@ export default function WelcomeScreen({navigation}) {
         Animated.timing(buttonPulseAnim, {
           toValue: 1.05,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.timing(buttonPulseAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ])
     ).start();
