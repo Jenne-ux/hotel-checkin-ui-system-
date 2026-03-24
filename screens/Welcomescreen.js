@@ -83,6 +83,7 @@ export default function WelcomeScreen({navigation}) {
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
     backgroundColor: "#F2F2F2",
     alignItems: "center",
     paddingBottom: 40,

@@ -15,7 +15,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Checkbox } from 'react-native-paper';
 import ApprovedVisit from './ApprovedVisit';
 import DenyVisit from './DenyVisit';
 
@@ -328,14 +327,24 @@ const Visitors = ({ navigation }) => {
 
             {/* Checkbox */}
             <View style={styles.checkboxWrapper}>
-              <Checkbox
-                status={agreed ? 'checked' : 'unchecked'}
+              <TouchableOpacity
                 onPress={() => {
                   setAgreed(!agreed);
                   if (errors.agreed) setErrors({...errors, agreed: null});
                 }}
-                color="#2563EB"
-              />
+                style={{
+                width: 24,
+                height: 24,
+                borderWidth: 2,
+                borderColor: agreed ? "#2563EB" : "#ccc",
+                borderRadius: 4,
+                backgroundColor: agreed ? "#2563EB" : "#fff",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {agreed && <Ionicons name="checkmark" size={16} color="#fff" />}
+            </TouchableOpacity>
               <Text style={styles.terms}>
                 By signing above, I acknowledge that the information provided is
                 accurate and I agree to the hotel's terms and conditions and privacy policy.
