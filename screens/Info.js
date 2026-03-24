@@ -478,18 +478,6 @@ export default function Info({ navigation }) {
             <View style={styles.summaryBox}>
               <Text style={styles.summaryTitle}>PAYMENT SUMMARY</Text>
               <View style={styles.row}>
-                <Text style={styles.summaryLabel}>Room Type</Text>
-                <Text style={styles.summaryValue}>{roomType}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.summaryLabel}>Room Number</Text>
-                <Text style={styles.summaryValue}>{roomNumber}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.summaryLabel}>Floor</Text>
-                <Text style={styles.summaryValue}>{floor}</Text>
-              </View>
-              <View style={styles.row}>
                 <Text style={styles.summaryLabel}>Price per Night</Text>
                 <Text style={styles.summaryValue}>₱{cleanPrice.toLocaleString()}.00</Text>
               </View>
