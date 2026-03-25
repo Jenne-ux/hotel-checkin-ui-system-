@@ -11,7 +11,6 @@ import {
   Image,
   Modal,
   Pressable,
-  Alert,
   FlatList,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -62,7 +61,6 @@ export default function Info({ navigation }) {
   const [cardVisible, setCardVisible] = useState(false);
   const [cashVisible, setCashVisible] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  const [errors, setErrors] = useState({});
   const [focusedInput, setFocusedInput] = useState(null);
 
   const cleanPrice = Number(roomPrice) || 0;
@@ -82,36 +80,10 @@ export default function Info({ navigation }) {
   const selectIdType = (selectedIdType) => {
     setIdType(selectedIdType);
     setIdTypeModalVisible(false);
-    if (errors.idType) setErrors({...errors, idType: null});
-  };
-
-  const validateForm = () => {
-    let newErrors = {};
-    if (!fullName.trim()) newErrors.fullName = "Full name is required";
-    if (!nationality.trim()) newErrors.nationality = "Nationality is required";
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid";
-    }
-    if (!phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (phone.length < 10) {
-      newErrors.phone = "Phone number must be 10 digits";
-    }
-    if (!idType) newErrors.idType = "Please select an ID type";
-    if (!idNumber.trim()) newErrors.idNumber = "ID number is required";
-    if (!agreed) newErrors.agreed = "You must agree to the terms";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleConfirm = () => {
-    if (validateForm()) {
-      setPaymentVisible(true);
-    } else {
-      Alert.alert("Validation Error", "Please fill in all required fields correctly.");
-    }
+    setPaymentVisible(true);
   };
 
   const handlePaymentSelection = (paymentMethod) => {
@@ -128,10 +100,8 @@ export default function Info({ navigation }) {
   const handleCashClose = () => setCashVisible(false);
   const handleQRClose = () => setQrVisible(false);
 
-  const renderLabel = (text, required = true) => (
-    <Text style={styles.label}>
-      {text} {required && <Text style={styles.asterisk}>*</Text>}
-    </Text>
+  const renderLabel = (text) => (
+    <Text style={styles.label}>{text}</Text>
   );
 
   return (
@@ -154,43 +124,41 @@ export default function Info({ navigation }) {
             {/* Full Name */}
             <View style={styles.inputWrapper}>
               {renderLabel("Full Name")}
-              <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused, errors.fullName && styles.inputError]}>
+              <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused]}>
                 <Ionicons name="person-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   placeholder="e.g. Juan Tamad"
                   placeholderTextColor="#94A3B8"
                   style={styles.input}
                   value={fullName}
-                  onChangeText={(text) => { setFullName(text); if (errors.fullName) setErrors({...errors, fullName: null}); }}
+                  onChangeText={setFullName}
                   onFocus={() => setFocusedInput('fullName')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
-              {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
             </View>
 
             {/* Nationality */}
             <View style={styles.inputWrapper}>
               {renderLabel("Nationality")}
-              <View style={[styles.inputContainer, focusedInput === 'nationality' && styles.inputFocused, errors.nationality && styles.inputError]}>
+              <View style={[styles.inputContainer, focusedInput === 'nationality' && styles.inputFocused]}>
                 <Ionicons name="flag-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   placeholder="e.g. Filipino"
                   placeholderTextColor="#94A3B8"
                   style={styles.input}
                   value={nationality}
-                  onChangeText={(text) => { setNationality(text); if (errors.nationality) setErrors({...errors, nationality: null}); }}
+                  onChangeText={setNationality}
                   onFocus={() => setFocusedInput('nationality')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
-              {errors.nationality && <Text style={styles.errorText}>{errors.nationality}</Text>}
             </View>
 
             {/* Email */}
             <View style={styles.inputWrapper}>
               {renderLabel("Email Address")}
-              <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused, errors.email && styles.inputError]}>
+              <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused]}>
                 <Ionicons name="mail-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   placeholder="e.g. juanTamad@email.com"
@@ -198,41 +166,39 @@ export default function Info({ navigation }) {
                   style={styles.input}
                   keyboardType="email-address"
                   value={email}
-                  onChangeText={(text) => { setEmail(text); if (errors.email) setErrors({...errors, email: null}); }}
+                  onChangeText={setEmail}
                   onFocus={() => setFocusedInput('email')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
 
             {/* Phone */}
             <View style={styles.inputWrapper}>
               {renderLabel("Phone Number")}
               <View style={styles.phoneContainer}>
-                <View style={[styles.countryCode, focusedInput === 'phone' && styles.countryCodeFocused, errors.phone && styles.countryCodeError]}>
+                <View style={[styles.countryCode, focusedInput === 'phone' && styles.countryCodeFocused]}>
                   <Text style={styles.countryCodeText}>+63</Text>
                 </View>
                 <TextInput
                   placeholder="9123456789"
                   placeholderTextColor="#94A3B8"
                   keyboardType="number-pad"
-                  style={[styles.phoneInput, focusedInput === 'phone' && styles.phoneInputFocused, errors.phone && styles.phoneInputError]}
+                  style={[styles.phoneInput, focusedInput === 'phone' && styles.phoneInputFocused]}
                   value={phone}
-                  onChangeText={(text) => { setPhone(text); if (errors.phone) setErrors({...errors, phone: null}); }}
+                  onChangeText={setPhone}
                   maxLength={10}
                   onFocus={() => setFocusedInput('phone')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
-              {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
             </View>
 
-            {/* Government ID Type - same style as Visitors.js */}
+            {/* Government ID Type */}
             <View style={styles.inputWrapper}>
               {renderLabel("Government-Issued ID Type")}
               <TouchableOpacity
-                style={[styles.dropdownButton, errors.idType && styles.inputError]}
+                style={styles.dropdownButton}
                 onPress={() => setIdTypeModalVisible(true)}
               >
                 <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
@@ -241,31 +207,29 @@ export default function Info({ navigation }) {
                 </Text>
                 <Ionicons name="chevron-down" size={20} color="#7f8c8d" />
               </TouchableOpacity>
-              {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
             </View>
 
             {/* ID Number */}
             <View style={styles.inputWrapper}>
               {renderLabel("ID / Passport Number")}
-              <View style={[styles.inputContainer, focusedInput === 'idNumber' && styles.inputFocused, errors.idNumber && styles.inputError]}>
+              <View style={[styles.inputContainer, focusedInput === 'idNumber' && styles.inputFocused]}>
                 <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   placeholder="e.g. P12345678"
                   placeholderTextColor="#94A3B8"
                   style={styles.input}
                   value={idNumber}
-                  onChangeText={(text) => { setIdNumber(text); if (errors.idNumber) setErrors({...errors, idNumber: null}); }}
+                  onChangeText={setIdNumber}
                   onFocus={() => setFocusedInput('idNumber')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
-              {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
             </View>
 
             {/* Checkbox */}
             <View style={styles.checkboxWrapper}>
               <TouchableOpacity
-                onPress={() => { setAgreed(!agreed); if (errors.agreed) setErrors({...errors, agreed: null}); }}
+                onPress={() => setAgreed(!agreed)}
                 style={{
                   width: 24, height: 24, borderWidth: 2,
                   borderColor: agreed ? "#2563EB" : "#ccc",
@@ -280,7 +244,6 @@ export default function Info({ navigation }) {
                 By signing above, I acknowledge that the information provided is accurate and I agree to the hotel's terms and conditions and privacy policy.
               </Text>
             </View>
-            {errors.agreed && <Text style={styles.errorText}>{errors.agreed}</Text>}
           </View>
 
           <View style={styles.buttonRow}>
@@ -294,7 +257,7 @@ export default function Info({ navigation }) {
         </Animated.View>
       </ScrollView>
 
-      {/* ID Type Modal - slides up from bottom like Visitors.js */}
+      {/* ID Type Modal */}
       <Modal animationType="slide" transparent={true} visible={idTypeModalVisible} onRequestClose={() => setIdTypeModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -321,14 +284,13 @@ export default function Info({ navigation }) {
         </View>
       </Modal>
 
-      {/* Payment Modal - centered */}
+      {/* Payment Modal */}
       <Modal animationType="fade" transparent={true} visible={paymentVisible} onRequestClose={() => setPaymentVisible(false)}>
         <Pressable style={styles.modalOverlayCenter} onPress={() => setPaymentVisible(false)}>
           <View style={styles.paymentModalContainer}>
             <TouchableOpacity style={styles.closeBtn} onPress={() => setPaymentVisible(false)}>
               <Ionicons name="close-circle" size={30} color="#666" />
             </TouchableOpacity>
-
             <Text style={styles.paymentTitle}>Select Payment Method</Text>
             <Text style={styles.paymentSubtitle}>Complete your payment securely using credit/debit card, cash, or mobile wallet.</Text>
 
@@ -391,23 +353,18 @@ const styles = StyleSheet.create({
   content: { padding: 16, backgroundColor: '#f5f5f5' },
   headerTitle: { fontSize: 28, fontWeight: "700", color: "#2c3e50", marginBottom: 8, marginTop: 10 },
   headerSub: { fontSize: 14, color: "#7f8c8d", marginBottom: 24, lineHeight: 20 },
-  asterisk: { color: "#FF0000", fontWeight: "bold" },
   formContainer: { backgroundColor: '#fff', borderRadius: 12, padding: 20, marginBottom: 20, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
   label: { fontWeight: "600", marginBottom: 6, color: "#34495e", fontSize: 16 },
   inputWrapper: { marginBottom: 20 },
   inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#fafafa", padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#e0e0e0" },
   inputFocused: { borderColor: "#2563EB", borderWidth: 2 },
-  inputError: { borderColor: "#FF0000", borderWidth: 1 },
-  errorText: { color: "#FF0000", fontSize: 12, marginTop: 5, marginLeft: 5 },
   input: { marginLeft: 10, flex: 1, fontSize: 16, color: "#2c3e50" },
   phoneContainer: { flexDirection: "row" },
   countryCode: { backgroundColor: "#f0f0f0", padding: 12, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderWidth: 1, borderColor: "#e0e0e0", borderRightWidth: 0, justifyContent: "center", alignItems: "center", minWidth: 60 },
   countryCodeFocused: { borderColor: "#2563EB", borderWidth: 2, borderRightWidth: 0 },
-  countryCodeError: { borderColor: "#FF0000", borderWidth: 1, borderRightWidth: 0 },
   countryCodeText: { fontSize: 16, fontWeight: "500", color: "#34495e" },
   phoneInput: { flex: 1, backgroundColor: "#fafafa", padding: 12, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderWidth: 1, borderColor: "#e0e0e0", fontSize: 16, color: "#2c3e50" },
   phoneInputFocused: { borderColor: "#2563EB", borderWidth: 2 },
-  phoneInputError: { borderColor: "#FF0000", borderWidth: 1 },
   dropdownButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fafafa' },
   dropdownButtonText: { flex: 1, fontSize: 16, color: '#2c3e50', marginLeft: 10 },
   dropdownPlaceholder: { flex: 1, fontSize: 16, color: '#94A3B8', marginLeft: 10 },
