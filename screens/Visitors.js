@@ -233,7 +233,7 @@ const Visitors = ({ navigation }) => {
                 <Ionicons name="person-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   style={styles.input}
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Juana Dela Cruz"
                   placeholderTextColor="#94A3B8"
                   value={fullName}
                   onChangeText={(text) => {
