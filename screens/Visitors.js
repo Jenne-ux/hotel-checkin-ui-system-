@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
+  Alert,
   Modal,
   FlatList,
   Image,
@@ -25,11 +26,9 @@ const ApprovalModal = ({ visible, onClose, onApprove, onDeny, visitorName, perso
           <ActivityIndicator size="large" color="#2563EB" />
           <Text style={styles.approvalLoadingText}>CONTACTING HOST...</Text>
         </View>
-        
         <Text style={styles.approvalMessage}>
           Admin has been notified. Please wait for approval from {personToVisit || 'the host'}.
         </Text>
-
         <View style={styles.approvalDetailsCard}>
           <Text style={styles.approvalDetailsTitle}>Visitor Details</Text>
           <View style={styles.approvalDetailRow}>
@@ -53,7 +52,6 @@ const ApprovalModal = ({ visible, onClose, onApprove, onDeny, visitorName, perso
             <Text style={styles.approvalDetailValue}>{idNumber || 'N/A'}</Text>
           </View>
         </View>
-
         <View style={styles.approvalButtonContainer}>
           <TouchableOpacity style={styles.approvalApproveButton} onPress={onApprove}>
             <Ionicons name="checkmark-circle" size={20} color="#fff" />
@@ -64,7 +62,6 @@ const ApprovalModal = ({ visible, onClose, onApprove, onDeny, visitorName, perso
             <Text style={styles.approvalDenyButtonText}>Deny Visit</Text>
           </TouchableOpacity>
         </View>
-
         <Text style={styles.approvalNoteText}>Admin: Click Approve after confirming with the host</Text>
       </View>
     </View>
@@ -96,11 +93,28 @@ const Visitors = ({ navigation }) => {
   const [approvedModalVisible, setApprovedModalVisible] = useState(false);
   const [deniedModalVisible, setDeniedModalVisible] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const handleBack = () => navigation.goBack();
 
+  const validateForm = () => {
+    let newErrors = {};
+    if (!fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!personToVisit.trim()) newErrors.personToVisit = "Person to visit is required";
+    if (!purposeOfVisit) newErrors.purposeOfVisit = "Please select a purpose of visit";
+    if (!idType) newErrors.idType = "Please select an ID type";
+    if (!idNumber.trim()) newErrors.idNumber = "ID number is required";
+    if (!agreed) newErrors.agreed = "You must agree to the terms";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleContinue = () => {
-    setApprovalModalVisible(true);
+    if (validateForm()) {
+      setApprovalModalVisible(true);
+    } else {
+      Alert.alert('Validation Error', 'Please fill in all required fields and agree to the terms.');
+    }
   };
 
   const handleApprovalClose = () => setApprovalModalVisible(false);
@@ -130,21 +144,25 @@ const Visitors = ({ navigation }) => {
   const selectPurpose = (purpose) => {
     setPurposeOfVisit(purpose);
     setPurposeModalVisible(false);
+    if (errors.purposeOfVisit) setErrors({...errors, purposeOfVisit: null});
   };
 
   const selectIdType = (selectedIdType) => {
     setIdType(selectedIdType);
     setIdTypeModalVisible(false);
+    if (errors.idType) setErrors({...errors, idType: null});
   };
 
-  const renderLabel = (text) => (
-    <Text style={styles.label}>{text}</Text>
+  const renderLabel = (text, required = true) => (
+    <Text style={styles.label}>
+      {text} {required && <Text style={styles.asterisk}>*</Text>}
+    </Text>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
-      
+
       <View style={styles.header}>
         <View style={styles.poweredBox}>
           <Text style={styles.poweredText}>Powered by</Text>
@@ -161,42 +179,44 @@ const Visitors = ({ navigation }) => {
             {/* Full Name */}
             <View style={styles.inputWrapper}>
               {renderLabel("Full Name")}
-              <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused]}>
+              <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused, errors.fullName && styles.inputError]}>
                 <Ionicons name="person-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   style={styles.input}
                   placeholder="e.g. Juana Dela Cruz"
                   placeholderTextColor="#94A3B8"
                   value={fullName}
-                  onChangeText={setFullName}
+                  onChangeText={(text) => { setFullName(text); if (errors.fullName) setErrors({...errors, fullName: null}); }}
                   onFocus={() => setFocusedInput('fullName')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
+              {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
             </View>
 
             {/* Person to Visit */}
             <View style={styles.inputWrapper}>
               {renderLabel("Person to Visit")}
-              <View style={[styles.inputContainer, focusedInput === 'personToVisit' && styles.inputFocused]}>
+              <View style={[styles.inputContainer, focusedInput === 'personToVisit' && styles.inputFocused, errors.personToVisit && styles.inputError]}>
                 <Ionicons name="people-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   style={styles.input}
                   placeholder="Who are you here to see?"
                   placeholderTextColor="#94A3B8"
                   value={personToVisit}
-                  onChangeText={setPersonToVisit}
+                  onChangeText={(text) => { setPersonToVisit(text); if (errors.personToVisit) setErrors({...errors, personToVisit: null}); }}
                   onFocus={() => setFocusedInput('personToVisit')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
+              {errors.personToVisit && <Text style={styles.errorText}>{errors.personToVisit}</Text>}
             </View>
 
             {/* Purpose of Visit */}
             <View style={styles.inputWrapper}>
               {renderLabel("Purpose of Visit")}
               <TouchableOpacity
-                style={[styles.dropdownButton, focusedInput === 'purpose' && styles.dropdownFocused]}
+                style={[styles.dropdownButton, errors.purposeOfVisit && styles.inputError]}
                 onPress={() => setPurposeModalVisible(true)}
               >
                 <Ionicons name="briefcase-outline" size={20} color="#8a8a8a" />
@@ -205,13 +225,14 @@ const Visitors = ({ navigation }) => {
                 </Text>
                 <Ionicons name="chevron-down" size={20} color="#7f8c8d" />
               </TouchableOpacity>
+              {errors.purposeOfVisit && <Text style={styles.errorText}>{errors.purposeOfVisit}</Text>}
             </View>
 
             {/* Government ID Type */}
             <View style={styles.inputWrapper}>
               {renderLabel("Government-Issued ID Type")}
               <TouchableOpacity
-                style={[styles.dropdownButton, focusedInput === 'idType' && styles.dropdownFocused]}
+                style={[styles.dropdownButton, errors.idType && styles.inputError]}
                 onPress={() => setIdTypeModalVisible(true)}
               >
                 <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
@@ -220,29 +241,31 @@ const Visitors = ({ navigation }) => {
                 </Text>
                 <Ionicons name="chevron-down" size={20} color="#7f8c8d" />
               </TouchableOpacity>
+              {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
             </View>
 
             {/* ID Number */}
             <View style={styles.inputWrapper}>
               {renderLabel("ID Number")}
-              <View style={[styles.inputContainer, focusedInput === 'idNumber' && styles.inputFocused]}>
+              <View style={[styles.inputContainer, focusedInput === 'idNumber' && styles.inputFocused, errors.idNumber && styles.inputError]}>
                 <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
                 <TextInput
                   style={styles.input}
                   value={idNumber}
-                  onChangeText={setIdNumber}
+                  onChangeText={(text) => { setIdNumber(text); if (errors.idNumber) setErrors({...errors, idNumber: null}); }}
                   placeholder="e.g. 123-456-789"
                   placeholderTextColor="#94A3B8"
                   onFocus={() => setFocusedInput('idNumber')}
                   onBlur={() => setFocusedInput(null)}
                 />
               </View>
+              {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
             </View>
 
             {/* Checkbox */}
             <View style={styles.checkboxWrapper}>
               <TouchableOpacity
-                onPress={() => setAgreed(!agreed)}
+                onPress={() => { setAgreed(!agreed); if (errors.agreed) setErrors({...errors, agreed: null}); }}
                 style={{
                   width: 24, height: 24, borderWidth: 2,
                   borderColor: agreed ? "#2563EB" : "#ccc",
@@ -257,6 +280,7 @@ const Visitors = ({ navigation }) => {
                 By signing above, I acknowledge that the information provided is accurate and I agree to the hotel's terms and conditions and privacy policy.
               </Text>
             </View>
+            {errors.agreed && <Text style={styles.errorText}>{errors.agreed}</Text>}
           </View>
 
           <View style={styles.buttonRow}>
@@ -365,14 +389,16 @@ const styles = StyleSheet.create({
   content: { padding: 16, backgroundColor: '#f5f5f5' },
   headerTitle: { fontSize: 28, fontWeight: "700", color: "#2c3e50", marginBottom: 8, marginTop: 10 },
   headerSub: { fontSize: 14, color: "#7f8c8d", marginBottom: 24, lineHeight: 20 },
+  asterisk: { color: "#FF0000", fontWeight: "bold" },
   formContainer: { backgroundColor: '#fff', borderRadius: 12, padding: 20, marginBottom: 20, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
   label: { fontWeight: "600", marginBottom: 6, color: "#34495e", fontSize: 16 },
   inputWrapper: { marginBottom: 20 },
   inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#fafafa", padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#e0e0e0" },
   inputFocused: { borderColor: "#2563EB", borderWidth: 2 },
+  inputError: { borderColor: "#FF0000", borderWidth: 1 },
+  errorText: { color: "#FF0000", fontSize: 12, marginTop: 5, marginLeft: 5 },
   input: { marginLeft: 10, flex: 1, fontSize: 16, color: "#2c3e50" },
   dropdownButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fafafa' },
-  dropdownFocused: { borderColor: "#2563EB", borderWidth: 2 },
   dropdownButtonText: { flex: 1, fontSize: 16, color: '#2c3e50', marginLeft: 10 },
   dropdownPlaceholder: { flex: 1, fontSize: 16, color: '#94A3B8', marginLeft: 10 },
   checkboxWrapper: { flexDirection: "row", alignItems: "flex-start", marginTop: 10, marginBottom: 10 },
