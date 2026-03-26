@@ -13,10 +13,288 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
+  Dimensions,
+  Animated,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import ApprovedVisit from './ApprovedVisit';
 import DenyVisit from './DenyVisit';
+
+const { width } = Dimensions.get('window');
+
+// Enhanced Custom Keyboard Component with better layout
+const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 50, type = 'alphabetic' }) => {
+  const [inputValue, setInputValue] = useState(value);
+  const [shiftActive, setShiftActive] = useState(false);
+  const [symbolsActive, setSymbolsActive] = useState(false);
+
+  React.useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  // Better organized keyboard layouts
+  const alphabeticLowerKeys = [
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+    ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+    ['123', 'space', '⌫', '✓']
+  ];
+
+  const alphabeticUpperKeys = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
+    ['123', 'space', '⌫', '✓']
+  ];
+
+  // Better organized numbers and common symbols - fits better on screen
+  const numericSymbolsKeys = [
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    ['@', '#', '$', '%', '&', '*', '-', '+', '=', '/'],
+    ['(', ')', '[', ']', '{', '}', '!', '?', '.', ','],
+    ['ABC', 'space', '⌫', '✓']
+  ];
+
+  const getCurrentKeys = () => {
+    if (symbolsActive) {
+      return numericSymbolsKeys;
+    }
+    if (shiftActive) {
+      return alphabeticUpperKeys;
+    }
+    return alphabeticLowerKeys;
+  };
+
+  const handleKeyPress = (key) => {
+    let newValue = inputValue;
+
+    switch (key) {
+      case '⌫':
+        newValue = inputValue.slice(0, -1);
+        break;
+      case 'space':
+        if (inputValue.length < maxLength) {
+          newValue = inputValue + ' ';
+        }
+        break;
+      case '✓':
+        onKeyPress(inputValue, true);
+        if (onClose) onClose();
+        return;
+      case '123':
+        setSymbolsActive(true);
+        setShiftActive(false);
+        return;
+      case 'ABC':
+        setSymbolsActive(false);
+        setShiftActive(false);
+        return;
+      default:
+        if (inputValue.length < maxLength) {
+          newValue = inputValue + key;
+        }
+        break;
+    }
+
+    setInputValue(newValue);
+    onKeyPress(newValue, false);
+  };
+
+  const keys = getCurrentKeys();
+
+  // Calculate key width based on number of keys in row
+  const getKeyWidth = (rowKeys, currentKey) => {
+    if (currentKey === 'space') return width / 2.5;
+    if (currentKey === '⌫' || currentKey === '✓' || currentKey === '123' || currentKey === 'ABC') return (width - 40) / 6;
+    return (width - 40) / rowKeys.length;
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.keyboardModalOverlay}>
+        <View style={styles.keyboardContainer}>
+          <View style={styles.keyboardHandleBar} />
+          
+          {/* Keyboard Header */}
+          <View style={styles.keyboardHeader}>
+            <Text style={styles.keyboardHeaderText}>
+              {symbolsActive ? 'Numbers & Symbols' : (shiftActive ? 'UPPERCASE' : 'Lowercase')}
+            </Text>
+            {!symbolsActive && type !== 'numeric' && (
+              <TouchableOpacity onPress={() => setShiftActive(!shiftActive)}>
+                <Ionicons 
+                  name={shiftActive ? "arrow-up-circle" : "arrow-up-outline"} 
+                  size={22} 
+                  color={shiftActive ? "#2563EB" : "#666"} 
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {keys.map((row, rowIndex) => {
+            const rowKeyWidth = getKeyWidth(row, '');
+            return (
+              <View key={rowIndex} style={styles.keyboardRow}>
+                {row.map((key) => {
+                  let keyStyle = {};
+                  let textStyle = {};
+                  const keyWidth = getKeyWidth(row, key);
+                  
+                  if (key === '✓') {
+                    keyStyle = styles.keyboardSubmitKey;
+                    textStyle = styles.keyboardSubmitKeyText;
+                  } else if (key === '⌫') {
+                    keyStyle = styles.keyboardBackspaceKey;
+                    textStyle = styles.keyboardBackspaceKeyText;
+                  } else if (key === 'space') {
+                    keyStyle = styles.keyboardSpaceKey;
+                    textStyle = styles.keyboardSpaceKeyText;
+                  } else if (key === '123' || key === 'ABC') {
+                    keyStyle = styles.keyboardSymbolKey;
+                    textStyle = styles.keyboardSymbolKeyText;
+                  } else {
+                    keyStyle = styles.keyboardKey;
+                    textStyle = styles.keyboardKeyText;
+                  }
+                  
+                  return (
+                    <TouchableOpacity
+                      key={key}
+                      style={[keyStyle, { width: keyWidth }]}
+                      onPress={() => handleKeyPress(key)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={textStyle}>
+                        {key === 'space' ? 'Space' : 
+                         key === '✓' ? 'Done' : 
+                         key === '⌫' ? '⌫' : 
+                         key === '123' ? '123' :
+                         key === 'ABC' ? 'ABC' : key}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            );
+          })}
+          
+          <TouchableOpacity 
+            style={styles.keyboardHideButton}
+            onPress={onClose}
+          >
+            <Text style={styles.keyboardHideButtonText}>Hide Keyboard</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// Custom TextInput with blue outline highlighting - REMOVED THE X BUTTON
+const CustomTextInput = ({ 
+  label, 
+  placeholder, 
+  value, 
+  onChangeText, 
+  icon, 
+  iconType = 'Ionicons', 
+  keyboardType = 'alphabetic', 
+  required = false, 
+  error = null, 
+  maxLength = 50,
+  onFocus,
+  onBlur,
+  focused = false
+}) => {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [internalValue, setInternalValue] = useState(value || '');
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+  const handleKeyPress = (newValue, isSubmitted) => {
+    setInternalValue(newValue);
+    onChangeText(newValue);
+    if (isSubmitted) {
+      setIsKeyboardVisible(false);
+    }
+  };
+
+  const handleFocus = () => {
+    setIsKeyboardVisible(true);
+    Animated.spring(scaleAnim, {
+      toValue: 1.02,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    if (onFocus) onFocus();
+  };
+
+  const handleBlur = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    if (onBlur) onBlur();
+  };
+
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (iconType === 'MaterialCommunityIcons') {
+      return <MaterialCommunityIcons name={icon} size={20} color={focused ? "#2563EB" : "#8a8a8a"} />;
+    }
+    return <Ionicons name={icon} size={20} color={focused ? "#2563EB" : "#8a8a8a"} />;
+  };
+
+  return (
+    <Animated.View style={[
+      styles.inputWrapper,
+      { transform: [{ scale: scaleAnim }] }
+    ]}>
+      <Text style={styles.label}>
+        {label} {required && <Text style={styles.asterisk}>*</Text>}
+      </Text>
+      
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={handleFocus}
+      >
+        <View style={[
+          styles.inputContainer, 
+          focused && styles.inputFocused, 
+          error && styles.inputError
+        ]}>
+          {renderIcon()}
+          <Text style={[
+            styles.inputText,
+            !internalValue && styles.placeholderText
+          ]}>
+            {internalValue || placeholder}
+          </Text>
+          {/* X BUTTON REMOVED */}
+        </View>
+      </TouchableOpacity>
+      
+      {error && <Text style={styles.errorText}>{error}</Text>}
+      
+      <CustomKeyboard
+        visible={isKeyboardVisible}
+        onClose={() => {
+          setIsKeyboardVisible(false);
+          handleBlur();
+        }}
+        onKeyPress={handleKeyPress}
+        value={internalValue}
+        type={keyboardType}
+        maxLength={maxLength}
+      />
+    </Animated.View>
+  );
+};
 
 const ApprovalModal = ({ visible, onClose, onApprove, onDeny, visitorName, personToVisit, purposeOfVisit, idType, idNumber }) => (
   <Modal transparent visible={visible} animationType="fade">
@@ -117,8 +395,6 @@ const Visitors = ({ navigation }) => {
     }
   };
 
-  const handleApprovalClose = () => setApprovalModalVisible(false);
-
   const handleAdminApprove = () => {
     setApprovalModalVisible(false);
     setApprovedModalVisible(true);
@@ -153,12 +429,6 @@ const Visitors = ({ navigation }) => {
     if (errors.idType) setErrors({...errors, idType: null});
   };
 
-  const renderLabel = (text, required = true) => (
-    <Text style={styles.label}>
-      {text} {required && <Text style={styles.asterisk}>*</Text>}
-    </Text>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
@@ -177,49 +447,51 @@ const Visitors = ({ navigation }) => {
 
           <View style={styles.formContainer}>
             {/* Full Name */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("Full Name")}
-              <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused, errors.fullName && styles.inputError]}>
-                <Ionicons name="person-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  style={styles.input}
-                  placeholder="e.g. Juana Dela Cruz"
-                  placeholderTextColor="#94A3B8"
-                  value={fullName}
-                  onChangeText={(text) => { setFullName(text); if (errors.fullName) setErrors({...errors, fullName: null}); }}
-                  onFocus={() => setFocusedInput('fullName')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
-            </View>
+            <CustomTextInput
+              label="Full Name"
+              placeholder="e.g. Juana Dela Cruz"
+              value={fullName}
+              onChangeText={(text) => { 
+                setFullName(text); 
+                if (errors.fullName) setErrors({...errors, fullName: null}); 
+              }}
+              icon="person-outline"
+              iconType="Ionicons"
+              keyboardType="alphabetic"
+              required={true}
+              error={errors.fullName}
+              focused={focusedInput === 'fullName'}
+              onFocus={() => setFocusedInput('fullName')}
+              onBlur={() => setFocusedInput(null)}
+            />
 
             {/* Person to Visit */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("Person to Visit")}
-              <View style={[styles.inputContainer, focusedInput === 'personToVisit' && styles.inputFocused, errors.personToVisit && styles.inputError]}>
-                <Ionicons name="people-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Who are you here to see?"
-                  placeholderTextColor="#94A3B8"
-                  value={personToVisit}
-                  onChangeText={(text) => { setPersonToVisit(text); if (errors.personToVisit) setErrors({...errors, personToVisit: null}); }}
-                  onFocus={() => setFocusedInput('personToVisit')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.personToVisit && <Text style={styles.errorText}>{errors.personToVisit}</Text>}
-            </View>
+            <CustomTextInput
+              label="Person to Visit"
+              placeholder="Who are you here to see?"
+              value={personToVisit}
+              onChangeText={(text) => { 
+                setPersonToVisit(text); 
+                if (errors.personToVisit) setErrors({...errors, personToVisit: null}); 
+              }}
+              icon="people-outline"
+              iconType="Ionicons"
+              keyboardType="alphabetic"
+              required={true}
+              error={errors.personToVisit}
+              focused={focusedInput === 'personToVisit'}
+              onFocus={() => setFocusedInput('personToVisit')}
+              onBlur={() => setFocusedInput(null)}
+            />
 
-            {/* Purpose of Visit */}
+            {/* Purpose of Visit - Dropdown */}
             <View style={styles.inputWrapper}>
-              {renderLabel("Purpose of Visit")}
+              <Text style={styles.label}>Purpose of Visit <Text style={styles.asterisk}>*</Text></Text>
               <TouchableOpacity
-                style={[styles.dropdownButton, errors.purposeOfVisit && styles.inputError]}
+                style={[styles.dropdownButton, focusedInput === 'purpose' && styles.dropdownFocused, errors.purposeOfVisit && styles.inputError]}
                 onPress={() => setPurposeModalVisible(true)}
               >
-                <Ionicons name="briefcase-outline" size={20} color="#8a8a8a" />
+                <Ionicons name="briefcase-outline" size={20} color={focusedInput === 'purpose' ? "#2563EB" : "#8a8a8a"} />
                 <Text style={purposeOfVisit ? styles.dropdownButtonText : styles.dropdownPlaceholder}>
                   {purposeOfVisit || "Select Reason"}
                 </Text>
@@ -228,14 +500,14 @@ const Visitors = ({ navigation }) => {
               {errors.purposeOfVisit && <Text style={styles.errorText}>{errors.purposeOfVisit}</Text>}
             </View>
 
-            {/* Government ID Type */}
+            {/* ID Type - Dropdown */}
             <View style={styles.inputWrapper}>
-              {renderLabel("Government-Issued ID Type")}
+              <Text style={styles.label}>Government-Issued ID Type <Text style={styles.asterisk}>*</Text></Text>
               <TouchableOpacity
-                style={[styles.dropdownButton, errors.idType && styles.inputError]}
+                style={[styles.dropdownButton, focusedInput === 'idType' && styles.dropdownFocused, errors.idType && styles.inputError]}
                 onPress={() => setIdTypeModalVisible(true)}
               >
-                <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
+                <MaterialCommunityIcons name="card-account-details-outline" size={20} color={focusedInput === 'idType' ? "#2563EB" : "#8a8a8a"} />
                 <Text style={idType ? styles.dropdownButtonText : styles.dropdownPlaceholder}>
                   {idType || "Select ID Type"}
                 </Text>
@@ -245,22 +517,24 @@ const Visitors = ({ navigation }) => {
             </View>
 
             {/* ID Number */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("ID Number")}
-              <View style={[styles.inputContainer, focusedInput === 'idNumber' && styles.inputFocused, errors.idNumber && styles.inputError]}>
-                <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  style={styles.input}
-                  value={idNumber}
-                  onChangeText={(text) => { setIdNumber(text); if (errors.idNumber) setErrors({...errors, idNumber: null}); }}
-                  placeholder="e.g. 123-456-789"
-                  placeholderTextColor="#94A3B8"
-                  onFocus={() => setFocusedInput('idNumber')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
-            </View>
+            <CustomTextInput
+              label="ID Number"
+              placeholder="e.g. 123-456-789"
+              value={idNumber}
+              onChangeText={(text) => { 
+                setIdNumber(text); 
+                if (errors.idNumber) setErrors({...errors, idNumber: null}); 
+              }}
+              icon="card-account-details-outline"
+              iconType="MaterialCommunityIcons"
+              keyboardType="numeric"
+              required={true}
+              error={errors.idNumber}
+              maxLength={20}
+              focused={focusedInput === 'idNumber'}
+              onFocus={() => setFocusedInput('idNumber')}
+              onBlur={() => setFocusedInput(null)}
+            />
 
             {/* Checkbox */}
             <View style={styles.checkboxWrapper}>
@@ -350,7 +624,7 @@ const Visitors = ({ navigation }) => {
 
       <ApprovalModal
         visible={approvalModalVisible}
-        onClose={handleApprovalClose}
+        onClose={() => setApprovalModalVisible(false)}
         onApprove={handleAdminApprove}
         onDeny={handleAdminDeny}
         visitorName={fullName}
@@ -389,24 +663,62 @@ const styles = StyleSheet.create({
   content: { padding: 16, backgroundColor: '#f5f5f5' },
   headerTitle: { fontSize: 28, fontWeight: "700", color: "#2c3e50", marginBottom: 8, marginTop: 10 },
   headerSub: { fontSize: 14, color: "#7f8c8d", marginBottom: 24, lineHeight: 20 },
-  asterisk: { color: "#FF0000", fontWeight: "bold" },
-  formContainer: { backgroundColor: '#fff', borderRadius: 12, padding: 20, marginBottom: 20, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
+  formContainer: { backgroundColor: '#fff', borderRadius: 12, padding: 20, marginBottom: 20, elevation: 2 },
   label: { fontWeight: "600", marginBottom: 6, color: "#34495e", fontSize: 16 },
+  asterisk: { color: "#FF0000", fontWeight: "bold" },
   inputWrapper: { marginBottom: 20 },
-  inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#fafafa", padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#e0e0e0" },
-  inputFocused: { borderColor: "#2563EB", borderWidth: 2 },
-  inputError: { borderColor: "#FF0000", borderWidth: 1 },
+  inputContainer: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#fafafa", 
+    padding: 12, 
+    borderRadius: 8, 
+    borderWidth: 2, 
+    borderColor: "#e0e0e0",
+    minHeight: 48,
+  },
+  inputFocused: { 
+    borderColor: "#2563EB", 
+    borderWidth: 2,
+    backgroundColor: "#fff",
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inputError: { borderColor: "#FF0000", borderWidth: 2 },
+  inputText: { marginLeft: 10, flex: 1, fontSize: 16, color: "#2c3e50" },
+  placeholderText: { color: "#94A3B8" },
   errorText: { color: "#FF0000", fontSize: 12, marginTop: 5, marginLeft: 5 },
-  input: { marginLeft: 10, flex: 1, fontSize: 16, color: "#2c3e50" },
-  dropdownButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fafafa' },
+  dropdownButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 2, 
+    borderColor: '#e0e0e0', 
+    borderRadius: 8, 
+    paddingHorizontal: 12, 
+    paddingVertical: 12, 
+    backgroundColor: '#fafafa',
+  },
+  dropdownFocused: { 
+    borderColor: "#2563EB", 
+    borderWidth: 2,
+    backgroundColor: "#fff",
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   dropdownButtonText: { flex: 1, fontSize: 16, color: '#2c3e50', marginLeft: 10 },
   dropdownPlaceholder: { flex: 1, fontSize: 16, color: '#94A3B8', marginLeft: 10 },
   checkboxWrapper: { flexDirection: "row", alignItems: "flex-start", marginTop: 10, marginBottom: 10 },
   terms: { flex: 1, fontSize: 13, color: "#7f8c8d", lineHeight: 18, marginLeft: 8 },
-  buttonRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 20, marginBottom: 20, backgroundColor: "#f5f5f5" },
+  buttonRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 20, marginBottom: 20 },
   backBtn: { backgroundColor: "#fff", paddingVertical: 12, paddingHorizontal: 20, borderRadius: 30, width: "40%", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#2563EB", height: 48 },
   backBtnText: { color: "#2563EB", fontWeight: "600", fontSize: 16 },
-  confirmBtn: { backgroundColor: "#2563EB", paddingVertical: 12, paddingHorizontal: 20, borderRadius: 30, width: "55%", alignItems: "center", justifyContent: "center", elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, height: 48 },
+  confirmBtn: { backgroundColor: "#2563EB", paddingVertical: 12, paddingHorizontal: 20, borderRadius: 30, width: "55%", alignItems: "center", justifyContent: "center", elevation: 2, height: 48 },
   confirmText: { color: "#fff", fontWeight: "600", fontSize: 16 },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalOverlayCenter: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
@@ -417,13 +729,13 @@ const styles = StyleSheet.create({
   modalItemSelected: { backgroundColor: '#2563EB' },
   modalItemText: { fontSize: 16, color: '#2c3e50' },
   modalItemTextSelected: { color: '#fff', fontWeight: '500' },
-  approvalModalContent: { backgroundColor: '#fff', borderRadius: 24, padding: 24, width: '90%', maxWidth: 400, alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 },
+  approvalModalContent: { backgroundColor: '#fff', borderRadius: 24, padding: 24, width: '90%', maxWidth: 400, alignItems: 'center', elevation: 5 },
   approvalLoadingContainer: { alignItems: 'center', marginBottom: 16 },
-  approvalLoadingText: { fontSize: 16, fontWeight: '600', color: '#2563EB', marginTop: 8, letterSpacing: 0.5 },
-  approvalMessage: { fontSize: 14, color: '#7f8c8d', textAlign: 'center', marginBottom: 20, lineHeight: 20, paddingHorizontal: 10 },
-  approvalDetailsCard: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, width: '100%', marginBottom: 20, borderWidth: 1, borderColor: '#E2E8F0' },
+  approvalLoadingText: { fontSize: 16, fontWeight: '600', color: '#2563EB', marginTop: 8 },
+  approvalMessage: { fontSize: 14, color: '#7f8c8d', textAlign: 'center', marginBottom: 20 },
+  approvalDetailsCard: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, width: '100%', marginBottom: 20 },
   approvalDetailsTitle: { fontSize: 15, fontWeight: '600', color: '#2563EB', marginBottom: 12, textAlign: 'center' },
-  approvalDetailRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, paddingHorizontal: 4 },
+  approvalDetailRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   approvalDetailLabel: { fontSize: 13, color: '#64748B', fontWeight: '500' },
   approvalDetailValue: { fontSize: 13, color: '#1E293B', fontWeight: '600' },
   approvalButtonContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 12, gap: 10 },
@@ -432,6 +744,25 @@ const styles = StyleSheet.create({
   approvalDenyButton: { backgroundColor: '#EF4444', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 30, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   approvalDenyButtonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
   approvalNoteText: { fontSize: 11, color: '#94A3B8', fontStyle: 'italic', textAlign: 'center' },
+  // Keyboard styles
+  keyboardModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  keyboardContainer: { backgroundColor: '#e8e8e8', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 12, paddingBottom: 20 },
+  keyboardHandleBar: { width: 40, height: 4, backgroundColor: '#b0b0b0', borderRadius: 2, alignSelf: 'center', marginBottom: 8 },
+  keyboardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginBottom: 8 },
+  keyboardHeaderText: { fontSize: 12, color: '#666', fontWeight: '500' },
+  keyboardRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 6 },
+  keyboardKey: { marginHorizontal: 2, paddingVertical: 12, paddingHorizontal: 4, backgroundColor: '#fff', borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 1, elevation: 1 },
+  keyboardKeyText: { fontSize: 18, fontWeight: '500', color: '#333' },
+  keyboardBackspaceKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#ffebee', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardBackspaceKeyText: { fontSize: 22, fontWeight: '600', color: '#d32f2f' },
+  keyboardSpaceKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#f5f5f5', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardSpaceKeyText: { fontSize: 14, fontWeight: '500', color: '#666' },
+  keyboardSubmitKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#4CAF50', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardSubmitKeyText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
+  keyboardSymbolKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#e3f2fd', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardSymbolKeyText: { fontSize: 14, fontWeight: '500', color: '#1976d2' },
+  keyboardHideButton: { marginTop: 8, paddingVertical: 8, alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, marginHorizontal: 20 },
+  keyboardHideButtonText: { fontSize: 14, color: '#666', fontWeight: '500' },
 });
 
 export default Visitors;
