@@ -19,7 +19,7 @@ import NewCheckin from "./screens/NewCheckin";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  console.log('App is running'); // This will show in terminal
+  console.log('App is running');
 
   return (
     <NavigationContainer>

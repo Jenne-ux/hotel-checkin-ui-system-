@@ -13,19 +13,46 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function WelcomeScreen({navigation}) {
   const buttonPulseAnim = useRef(new Animated.Value(1)).current;
+  
+  // Animation for screen entrance
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
   useEffect(() => {
+    // Entrance animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 40,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    // Button pulse animation (loop)
     Animated.loop(
       Animated.sequence([
         Animated.timing(buttonPulseAnim, {
           toValue: 1.05,
           duration: 1000,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
         Animated.timing(buttonPulseAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
       ])
     ).start();
@@ -34,7 +61,17 @@ export default function WelcomeScreen({navigation}) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar style="light" />
-      <View style={styles.header}>
+      
+      {/* Animated Header */}
+      <Animated.View 
+        style={[
+          styles.header, 
+          { 
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}
+      >
         <View style={styles.poweredBox}>
           <Text style={styles.poweredText}>Powered by</Text>
           <Image
@@ -43,9 +80,18 @@ export default function WelcomeScreen({navigation}) {
             resizeMode="contain"
           />
         </View>
-      </View>
+      </Animated.View>
 
-      <View style={styles.centerContent}>
+      {/* Animated Center Content */}
+      <Animated.View 
+        style={[
+          styles.centerContent, 
+          { 
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }
+        ]}
+      >
         <Text style={styles.title}>Welcome to</Text>
         <View style={styles.brandRow}>
           <Text style={styles.brandBlue}>PRO</Text>
@@ -54,28 +100,48 @@ export default function WelcomeScreen({navigation}) {
         </View>
         <Text style={styles.subtitle}>Experience seamless hospitality.</Text>
         <Text style={styles.subtitle}>Please touch below to begin.</Text>
-      </View>
+      </Animated.View>
 
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate("Rooms")}
+      {/* Animated Start Button */}
+      <Animated.View
+        style={[
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }
+        ]}
       >
-        <Animated.View
-          style={[styles.startButton, { transform: [{ scale: buttonPulseAnim }] }]}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate("Rooms")}
         >
-          <Ionicons name="finger-print" size={70} color="white" />
-          <Text style={styles.startText}>TOUCH TO START</Text>
-          <Text style={styles.startSub}>Self Check-in</Text>
-        </Animated.View>
-      </TouchableOpacity>
+          <Animated.View
+            style={[styles.startButton, { transform: [{ scale: buttonPulseAnim }] }]}
+          >
+            <Ionicons name="finger-print" size={70} color="white" />
+            <Text style={styles.startText}>TOUCH TO START</Text>
+            <Text style={styles.startSub}>Self Check-in</Text>
+          </Animated.View>
+        </TouchableOpacity>
+      </Animated.View>
 
-      <TouchableOpacity
-        style={styles.visitorButton}
-        onPress={() => navigation.navigate("Visitors")}
+      {/* Animated Visitor Button */}
+      <Animated.View
+        style={[
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}
       >
-        <Ionicons name="people" size={26} color="#1B2A41" />
-        <Text style={styles.visitorText}>Visitor Registration</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.visitorButton}
+          onPress={() => navigation.navigate("Visitors")}
+        >
+          <Ionicons name="people" size={26} color="#1B2A41" />
+          <Text style={styles.visitorText}>Visitor Registration</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </ScrollView>
   );
 }
@@ -108,11 +174,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 30,
-  },
-  logoText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2563EB",
   },
   centerContent: {
     alignItems: "center",
@@ -189,9 +250,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#1B2A41",
-  },
-  brandLogo: {
-    width: 180,
-    height: 50,
   },
 });
