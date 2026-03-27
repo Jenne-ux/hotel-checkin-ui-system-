@@ -13,12 +13,288 @@ import {
   Pressable,
   Alert,
   FlatList,
+  Dimensions,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import QRPaymentModal from "./QR";
 import Card from "./Card";
 import Cash from "./Cash";
+
+const { width } = Dimensions.get('window');
+
+// Custom Keyboard Component
+const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 50, type = 'alphabetic' }) => {
+  const [inputValue, setInputValue] = useState(value);
+  const [shiftActive, setShiftActive] = useState(false);
+  const [symbolsActive, setSymbolsActive] = useState(false);
+
+  React.useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  const alphabeticLowerKeys = [
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+    ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+    ['123', 'space', '⌫', '✓']
+  ];
+
+  const alphabeticUpperKeys = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
+    ['123', 'space', '⌫', '✓']
+  ];
+
+  const numericSymbolsKeys = [
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+    ['@', '#', '$', '%', '&', '*', '-', '+', '=', '/'],
+    ['(', ')', '[', ']', '{', '}', '!', '?', '.', ','],
+    ['ABC', 'space', '⌫', '✓']
+  ];
+
+  const getCurrentKeys = () => {
+    if (symbolsActive) {
+      return numericSymbolsKeys;
+    }
+    if (shiftActive) {
+      return alphabeticUpperKeys;
+    }
+    return alphabeticLowerKeys;
+  };
+
+  const handleKeyPress = (key) => {
+    let newValue = inputValue;
+
+    switch (key) {
+      case '⌫':
+        newValue = inputValue.slice(0, -1);
+        break;
+      case 'space':
+        if (inputValue.length < maxLength) {
+          newValue = inputValue + ' ';
+        }
+        break;
+      case '✓':
+        onKeyPress(inputValue, true);
+        if (onClose) onClose();
+        return;
+      case '123':
+        setSymbolsActive(true);
+        setShiftActive(false);
+        return;
+      case 'ABC':
+        setSymbolsActive(false);
+        setShiftActive(false);
+        return;
+      default:
+        if (inputValue.length < maxLength) {
+          newValue = inputValue + key;
+        }
+        break;
+    }
+
+    setInputValue(newValue);
+    onKeyPress(newValue, false);
+  };
+
+  const keys = getCurrentKeys();
+
+  const getKeyWidth = (rowKeys, currentKey) => {
+    if (currentKey === 'space') return width / 2.5;
+    if (currentKey === '⌫' || currentKey === '✓' || currentKey === '123' || currentKey === 'ABC') return (width - 40) / 6;
+    return (width - 40) / rowKeys.length;
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.keyboardModalOverlay}>
+        <View style={styles.keyboardContainer}>
+          <View style={styles.keyboardHandleBar} />
+          
+          <View style={styles.keyboardHeader}>
+            <Text style={styles.keyboardHeaderText}>
+              {symbolsActive ? 'Numbers & Symbols' : (shiftActive ? 'UPPERCASE' : 'Lowercase')}
+            </Text>
+            {!symbolsActive && type !== 'numeric' && (
+              <TouchableOpacity onPress={() => setShiftActive(!shiftActive)}>
+                <Ionicons 
+                  name={shiftActive ? "arrow-up-circle" : "arrow-up-outline"} 
+                  size={22} 
+                  color={shiftActive ? "#2563EB" : "#666"} 
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {keys.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.keyboardRow}>
+              {row.map((key) => {
+                let keyStyle = {};
+                let textStyle = {};
+                const keyWidth = getKeyWidth(row, key);
+                
+                if (key === '✓') {
+                  keyStyle = styles.keyboardSubmitKey;
+                  textStyle = styles.keyboardSubmitKeyText;
+                } else if (key === '⌫') {
+                  keyStyle = styles.keyboardBackspaceKey;
+                  textStyle = styles.keyboardBackspaceKeyText;
+                } else if (key === 'space') {
+                  keyStyle = styles.keyboardSpaceKey;
+                  textStyle = styles.keyboardSpaceKeyText;
+                } else if (key === '123' || key === 'ABC') {
+                  keyStyle = styles.keyboardSymbolKey;
+                  textStyle = styles.keyboardSymbolKeyText;
+                } else {
+                  keyStyle = styles.keyboardKey;
+                  textStyle = styles.keyboardKeyText;
+                }
+                
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    style={[keyStyle, { width: keyWidth }]}
+                    onPress={() => handleKeyPress(key)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={textStyle}>
+                      {key === 'space' ? 'Space' : 
+                       key === '✓' ? 'Done' : 
+                       key === '⌫' ? '⌫' : 
+                       key === '123' ? '123' :
+                       key === 'ABC' ? 'ABC' : key}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ))}
+          
+          <TouchableOpacity 
+            style={styles.keyboardHideButton}
+            onPress={onClose}
+          >
+            <Text style={styles.keyboardHideButtonText}>Hide Keyboard</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// Custom TextInput Component
+const CustomTextInput = ({ 
+  label, 
+  placeholder, 
+  value, 
+  onChangeText, 
+  icon, 
+  iconType = 'Ionicons', 
+  keyboardType = 'alphabetic', 
+  required = false, 
+  error = null, 
+  maxLength = 50,
+  onFocus,
+  onBlur,
+  focused = false,
+  additionalInfo = null
+}) => {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [internalValue, setInternalValue] = useState(value || '');
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handleKeyPress = (newValue, isSubmitted) => {
+    setInternalValue(newValue);
+    onChangeText(newValue);
+    if (isSubmitted) {
+      setIsKeyboardVisible(false);
+    }
+  };
+
+  const handleFocus = () => {
+    setIsKeyboardVisible(true);
+    Animated.spring(scaleAnim, {
+      toValue: 1.02,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    if (onFocus) onFocus();
+  };
+
+  const handleBlur = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    if (onBlur) onBlur();
+  };
+
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (iconType === 'MaterialCommunityIcons') {
+      return <MaterialCommunityIcons name={icon} size={20} color={focused ? "#2563EB" : "#8a8a8a"} />;
+    }
+    return <Ionicons name={icon} size={20} color={focused ? "#2563EB" : "#8a8a8a"} />;
+  };
+
+  const renderAdditionalInfo = () => {
+    if (!additionalInfo) return null;
+    return <Text style={styles.additionalInfo}>{additionalInfo}</Text>;
+  };
+
+  return (
+    <Animated.View style={[
+      styles.inputWrapper,
+      { transform: [{ scale: scaleAnim }] }
+    ]}>
+      <Text style={styles.label}>
+        {label} {required && <Text style={styles.asterisk}>*</Text>}
+      </Text>
+      
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={handleFocus}
+      >
+        <View style={[
+          styles.inputContainer, 
+          focused && styles.inputFocused, 
+          error && styles.inputError
+        ]}>
+          {renderIcon()}
+          <Text style={[
+            styles.inputText,
+            !internalValue && styles.placeholderText
+          ]}>
+            {internalValue || placeholder}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      
+      {renderAdditionalInfo()}
+      {error && <Text style={styles.errorText}>{error}</Text>}
+      
+      <CustomKeyboard
+        visible={isKeyboardVisible}
+        onClose={() => {
+          setIsKeyboardVisible(false);
+          handleBlur();
+        }}
+        onKeyPress={handleKeyPress}
+        value={internalValue}
+        type={keyboardType}
+        maxLength={maxLength}
+      />
+    </Animated.View>
+  );
+};
 
 export default function Info({ navigation }) {
   const route = useRoute();
@@ -128,12 +404,6 @@ export default function Info({ navigation }) {
   const handleCashClose = () => setCashVisible(false);
   const handleQRClose = () => setQrVisible(false);
 
-  const renderLabel = (text, required = true) => (
-    <Text style={styles.label}>
-      {text} {required && <Text style={styles.asterisk}>*</Text>}
-    </Text>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -151,86 +421,101 @@ export default function Info({ navigation }) {
           </Text>
 
           <View style={styles.formContainer}>
-            {/* Full Name */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("Full Name")}
-              <View style={[styles.inputContainer, focusedInput === 'fullName' && styles.inputFocused, errors.fullName && styles.inputError]}>
-                <Ionicons name="person-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  placeholder="e.g. Juan Tamad"
-                  placeholderTextColor="#94A3B8"
-                  style={styles.input}
-                  value={fullName}
-                  onChangeText={(text) => { setFullName(text); if (errors.fullName) setErrors({...errors, fullName: null}); }}
-                  onFocus={() => setFocusedInput('fullName')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
-            </View>
+            {/* Full Name - Using custom keyboard */}
+            <CustomTextInput
+              label="Full Name"
+              placeholder="e.g. Juan Tamad"
+              value={fullName}
+              onChangeText={(text) => { setFullName(text); if (errors.fullName) setErrors({...errors, fullName: null}); }}
+              icon="person-outline"
+              iconType="Ionicons"
+              keyboardType="alphabetic"
+              required={true}
+              error={errors.fullName}
+              focused={focusedInput === 'fullName'}
+              onFocus={() => setFocusedInput('fullName')}
+              onBlur={() => setFocusedInput(null)}
+            />
 
-            {/* Nationality */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("Nationality")}
-              <View style={[styles.inputContainer, focusedInput === 'nationality' && styles.inputFocused, errors.nationality && styles.inputError]}>
-                <Ionicons name="flag-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  placeholder="e.g. Filipino"
-                  placeholderTextColor="#94A3B8"
-                  style={styles.input}
-                  value={nationality}
-                  onChangeText={(text) => { setNationality(text); if (errors.nationality) setErrors({...errors, nationality: null}); }}
-                  onFocus={() => setFocusedInput('nationality')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.nationality && <Text style={styles.errorText}>{errors.nationality}</Text>}
-            </View>
+            {/* Nationality - Using custom keyboard */}
+            <CustomTextInput
+              label="Nationality"
+              placeholder="e.g. Filipino"
+              value={nationality}
+              onChangeText={(text) => { setNationality(text); if (errors.nationality) setErrors({...errors, nationality: null}); }}
+              icon="flag-outline"
+              iconType="Ionicons"
+              keyboardType="alphabetic"
+              required={true}
+              error={errors.nationality}
+              focused={focusedInput === 'nationality'}
+              onFocus={() => setFocusedInput('nationality')}
+              onBlur={() => setFocusedInput(null)}
+            />
 
-            {/* Email */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("Email Address")}
-              <View style={[styles.inputContainer, focusedInput === 'email' && styles.inputFocused, errors.email && styles.inputError]}>
-                <Ionicons name="mail-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  placeholder="e.g. juanTamad@email.com"
-                  placeholderTextColor="#94A3B8"
-                  style={styles.input}
-                  keyboardType="email-address"
-                  value={email}
-                  onChangeText={(text) => { setEmail(text); if (errors.email) setErrors({...errors, email: null}); }}
-                  onFocus={() => setFocusedInput('email')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-            </View>
+            {/* Email - Using email keyboard */}
+            <CustomTextInput
+              label="Email Address"
+              placeholder="e.g. juanTamad@email.com"
+              value={email}
+              onChangeText={(text) => { setEmail(text); if (errors.email) setErrors({...errors, email: null}); }}
+              icon="mail-outline"
+              iconType="Ionicons"
+              keyboardType="email"
+              required={true}
+              error={errors.email}
+              focused={focusedInput === 'email'}
+              onFocus={() => setFocusedInput('email')}
+              onBlur={() => setFocusedInput(null)}
+              additionalInfo="We'll send your confirmation and receipt to this email"
+            />
 
-            {/* Phone */}
+            {/* Phone - Using numeric keyboard */}
             <View style={styles.inputWrapper}>
-              {renderLabel("Phone Number")}
+              <Text style={styles.label}>Phone Number <Text style={styles.asterisk}>*</Text></Text>
               <View style={styles.phoneContainer}>
                 <View style={[styles.countryCode, focusedInput === 'phone' && styles.countryCodeFocused, errors.phone && styles.countryCodeError]}>
                   <Text style={styles.countryCodeText}>+63</Text>
                 </View>
-                <TextInput
-                  placeholder="9123456789"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="number-pad"
-                  style={[styles.phoneInput, focusedInput === 'phone' && styles.phoneInputFocused, errors.phone && styles.phoneInputError]}
-                  value={phone}
-                  onChangeText={(text) => { setPhone(text); if (errors.phone) setErrors({...errors, phone: null}); }}
-                  maxLength={10}
-                  onFocus={() => setFocusedInput('phone')}
-                  onBlur={() => setFocusedInput(null)}
-                />
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={{ flex: 1 }}
+                  onPress={() => setFocusedInput('phone')}
+                >
+                  <View style={[
+                    styles.phoneInputContainer,
+                    focusedInput === 'phone' && styles.phoneInputContainerFocused,
+                    errors.phone && styles.phoneInputContainerError
+                  ]}>
+                    <Text style={[
+                      styles.phoneInputText,
+                      !phone && styles.phonePlaceholderText
+                    ]}>
+                      {phone || "9123456789"}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               </View>
               {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
             </View>
 
-            {/* Government ID Type */}
+            {/* Custom keyboard for phone */}
+            <CustomKeyboard
+              visible={focusedInput === 'phone'}
+              onClose={() => setFocusedInput(null)}
+              onKeyPress={(newValue, isSubmitted) => {
+                setPhone(newValue);
+                if (errors.phone) setErrors({...errors, phone: null});
+                if (isSubmitted) setFocusedInput(null);
+              }}
+              value={phone}
+              type="numeric"
+              maxLength={10}
+            />
+
+            {/* Government ID Type - Dropdown */}
             <View style={styles.inputWrapper}>
-              {renderLabel("Government-Issued ID Type")}
+              <Text style={styles.label}>Government-Issued ID Type <Text style={styles.asterisk}>*</Text></Text>
               <TouchableOpacity
                 style={[styles.dropdownButton, errors.idType && styles.inputError]}
                 onPress={() => setIdTypeModalVisible(true)}
@@ -244,23 +529,21 @@ export default function Info({ navigation }) {
               {errors.idType && <Text style={styles.errorText}>{errors.idType}</Text>}
             </View>
 
-            {/* ID Number */}
-            <View style={styles.inputWrapper}>
-              {renderLabel("ID / Passport Number")}
-              <View style={[styles.inputContainer, focusedInput === 'idNumber' && styles.inputFocused, errors.idNumber && styles.inputError]}>
-                <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#8a8a8a" />
-                <TextInput
-                  placeholder="e.g. P12345678"
-                  placeholderTextColor="#94A3B8"
-                  style={styles.input}
-                  value={idNumber}
-                  onChangeText={(text) => { setIdNumber(text); if (errors.idNumber) setErrors({...errors, idNumber: null}); }}
-                  onFocus={() => setFocusedInput('idNumber')}
-                  onBlur={() => setFocusedInput(null)}
-                />
-              </View>
-              {errors.idNumber && <Text style={styles.errorText}>{errors.idNumber}</Text>}
-            </View>
+            {/* ID Number - Using custom keyboard */}
+            <CustomTextInput
+              label="ID / Passport Number"
+              placeholder="e.g. P12345678"
+              value={idNumber}
+              onChangeText={(text) => { setIdNumber(text); if (errors.idNumber) setErrors({...errors, idNumber: null}); }}
+              icon="card-account-details-outline"
+              iconType="MaterialCommunityIcons"
+              keyboardType="alphabetic"
+              required={true}
+              error={errors.idNumber}
+              focused={focusedInput === 'idNumber'}
+              onFocus={() => setFocusedInput('idNumber')}
+              onBlur={() => setFocusedInput(null)}
+            />
 
             {/* Checkbox */}
             <View style={styles.checkboxWrapper}>
@@ -394,20 +677,24 @@ const styles = StyleSheet.create({
   formContainer: { backgroundColor: '#fff', borderRadius: 12, padding: 20, marginBottom: 20, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
   label: { fontWeight: "600", marginBottom: 6, color: "#34495e", fontSize: 16 },
   inputWrapper: { marginBottom: 20 },
-  inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#fafafa", padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#e0e0e0" },
-  inputFocused: { borderColor: "#2563EB", borderWidth: 2 },
-  inputError: { borderColor: "#FF0000", borderWidth: 1 },
+  inputContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#fafafa", padding: 12, borderRadius: 8, borderWidth: 2, borderColor: "#e0e0e0", minHeight: 48 },
+  inputFocused: { borderColor: "#2563EB", borderWidth: 2, backgroundColor: "#fff", shadowColor: "#2563EB", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 2 },
+  inputError: { borderColor: "#FF0000", borderWidth: 2 },
+  inputText: { marginLeft: 10, flex: 1, fontSize: 16, color: "#2c3e50" },
+  placeholderText: { color: "#94A3B8" },
   errorText: { color: "#FF0000", fontSize: 12, marginTop: 5, marginLeft: 5 },
-  input: { marginLeft: 10, flex: 1, fontSize: 16, color: "#2c3e50" },
+  additionalInfo: { fontSize: 11, color: "#7f8c8d", marginTop: 4, marginLeft: 5 },
   phoneContainer: { flexDirection: "row" },
-  countryCode: { backgroundColor: "#f0f0f0", padding: 12, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderWidth: 1, borderColor: "#e0e0e0", borderRightWidth: 0, justifyContent: "center", alignItems: "center", minWidth: 60 },
+  countryCode: { backgroundColor: "#f0f0f0", padding: 12, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderWidth: 2, borderColor: "#e0e0e0", borderRightWidth: 0, justifyContent: "center", alignItems: "center", minWidth: 60 },
   countryCodeFocused: { borderColor: "#2563EB", borderWidth: 2, borderRightWidth: 0 },
-  countryCodeError: { borderColor: "#FF0000", borderWidth: 1, borderRightWidth: 0 },
+  countryCodeError: { borderColor: "#FF0000", borderWidth: 2, borderRightWidth: 0 },
   countryCodeText: { fontSize: 16, fontWeight: "500", color: "#34495e" },
-  phoneInput: { flex: 1, backgroundColor: "#fafafa", padding: 12, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderWidth: 1, borderColor: "#e0e0e0", fontSize: 16, color: "#2c3e50" },
-  phoneInputFocused: { borderColor: "#2563EB", borderWidth: 2 },
-  phoneInputError: { borderColor: "#FF0000", borderWidth: 1 },
-  dropdownButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fafafa' },
+  phoneInputContainer: { backgroundColor: "#fafafa", padding: 12, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderWidth: 2, borderColor: "#e0e0e0", borderLeftWidth: 0, flex: 1, minHeight: 48, justifyContent: "center" },
+  phoneInputContainerFocused: { borderColor: "#2563EB", borderWidth: 2, borderLeftWidth: 0, backgroundColor: "#fff" },
+  phoneInputContainerError: { borderColor: "#FF0000", borderWidth: 2, borderLeftWidth: 0 },
+  phoneInputText: { fontSize: 16, color: "#2c3e50" },
+  phonePlaceholderText: { color: "#94A3B8" },
+  dropdownButton: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#e0e0e0', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12, backgroundColor: '#fafafa' },
   dropdownButtonText: { flex: 1, fontSize: 16, color: '#2c3e50', marginLeft: 10 },
   dropdownPlaceholder: { flex: 1, fontSize: 16, color: '#94A3B8', marginLeft: 10 },
   checkboxWrapper: { flexDirection: "row", alignItems: "flex-start", marginTop: 10 },
@@ -450,4 +737,23 @@ const styles = StyleSheet.create({
   totalRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#e0e0e0", paddingHorizontal: 5 },
   totalText: { fontWeight: "700", fontSize: 16, color: "#2c3e50" },
   totalPrice: { fontWeight: "700", color: "#2563EB", fontSize: 16 },
+  // Keyboard styles
+  keyboardModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  keyboardContainer: { backgroundColor: '#e8e8e8', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 12, paddingBottom: 20 },
+  keyboardHandleBar: { width: 40, height: 4, backgroundColor: '#b0b0b0', borderRadius: 2, alignSelf: 'center', marginBottom: 8 },
+  keyboardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginBottom: 8 },
+  keyboardHeaderText: { fontSize: 12, color: '#666', fontWeight: '500' },
+  keyboardRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 6 },
+  keyboardKey: { marginHorizontal: 2, paddingVertical: 12, paddingHorizontal: 4, backgroundColor: '#fff', borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 1, elevation: 1 },
+  keyboardKeyText: { fontSize: 18, fontWeight: '500', color: '#333' },
+  keyboardBackspaceKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#ffebee', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardBackspaceKeyText: { fontSize: 22, fontWeight: '600', color: '#d32f2f' },
+  keyboardSpaceKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#f5f5f5', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardSpaceKeyText: { fontSize: 14, fontWeight: '500', color: '#666' },
+  keyboardSubmitKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#4CAF50', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardSubmitKeyText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
+  keyboardSymbolKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#e3f2fd', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  keyboardSymbolKeyText: { fontSize: 14, fontWeight: '500', color: '#1976d2' },
+  keyboardHideButton: { marginTop: 8, paddingVertical: 8, alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, marginHorizontal: 20 },
+  keyboardHideButtonText: { fontSize: 14, color: '#666', fontWeight: '500' },
 });
