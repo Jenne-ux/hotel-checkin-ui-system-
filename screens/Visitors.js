@@ -22,11 +22,12 @@ import DenyVisit from './DenyVisit';
 
 const { width } = Dimensions.get('window');
 
-// Enhanced Custom Keyboard Component with better layout
+// Enhanced Custom Keyboard Component with blue highlight on click
 const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 50, type = 'alphabetic' }) => {
   const [inputValue, setInputValue] = useState(value);
   const [shiftActive, setShiftActive] = useState(false);
   const [symbolsActive, setSymbolsActive] = useState(false);
+  const [pressedKey, setPressedKey] = useState(null);
 
   React.useEffect(() => {
     setInputValue(value);
@@ -66,6 +67,10 @@ const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 
   };
 
   const handleKeyPress = (key) => {
+    // Add highlight effect
+    setPressedKey(key);
+    setTimeout(() => setPressedKey(null), 150);
+
     let newValue = inputValue;
 
     switch (key) {
@@ -144,21 +149,22 @@ const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 
                   let keyStyle = {};
                   let textStyle = {};
                   const keyWidth = getKeyWidth(row, key);
+                  const isPressed = pressedKey === key;
                   
                   if (key === '✓') {
-                    keyStyle = styles.keyboardSubmitKey;
+                    keyStyle = [styles.keyboardSubmitKey, isPressed && styles.keyPressed];
                     textStyle = styles.keyboardSubmitKeyText;
                   } else if (key === '⌫') {
-                    keyStyle = styles.keyboardBackspaceKey;
+                    keyStyle = [styles.keyboardBackspaceKey, isPressed && styles.keyPressed];
                     textStyle = styles.keyboardBackspaceKeyText;
                   } else if (key === 'space') {
-                    keyStyle = styles.keyboardSpaceKey;
+                    keyStyle = [styles.keyboardSpaceKey, isPressed && styles.keyPressed];
                     textStyle = styles.keyboardSpaceKeyText;
                   } else if (key === '123' || key === 'ABC') {
-                    keyStyle = styles.keyboardSymbolKey;
+                    keyStyle = [styles.keyboardSymbolKey, isPressed && styles.keyPressed];
                     textStyle = styles.keyboardSymbolKeyText;
                   } else {
-                    keyStyle = styles.keyboardKey;
+                    keyStyle = [styles.keyboardKey, isPressed && styles.keyPressed];
                     textStyle = styles.keyboardKeyText;
                   }
                   
@@ -753,6 +759,10 @@ const styles = StyleSheet.create({
   keyboardRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 6 },
   keyboardKey: { marginHorizontal: 2, paddingVertical: 12, paddingHorizontal: 4, backgroundColor: '#fff', borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 1, elevation: 1 },
   keyboardKeyText: { fontSize: 18, fontWeight: '500', color: '#333' },
+  keyPressed: { 
+    backgroundColor: '#2563EB',
+    transform: [{ scale: 0.95 }],
+  },
   keyboardBackspaceKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#ffebee', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   keyboardBackspaceKeyText: { fontSize: 22, fontWeight: '600', color: '#d32f2f' },
   keyboardSpaceKey: { marginHorizontal: 2, paddingVertical: 12, backgroundColor: '#f5f5f5', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
