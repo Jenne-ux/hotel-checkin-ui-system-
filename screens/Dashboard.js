@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
   Platform,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -70,7 +71,6 @@ const Dashboard = ({ navigation }) => {
   const toggleSidebar = () => {
     if (!isSidebarPermanent) {
       if (sidebarVisible) {
-        // Close sidebar
         Animated.parallel([
           Animated.timing(sidebarAnim, {
             toValue: -width,
@@ -85,7 +85,6 @@ const Dashboard = ({ navigation }) => {
         ]).start();
         setSidebarVisible(false);
       } else {
-        // Open sidebar
         Animated.parallel([
           Animated.timing(sidebarAnim, {
             toValue: 0,
@@ -151,19 +150,18 @@ const Dashboard = ({ navigation }) => {
     }, 300);
   };
 
+  // Stats data without percentage change
   const stats = [
-    { title: "Check-ins", value: "24", change: "+12%", icon: "log-in-outline", color: "#10B981" },
-    { title: "Active Visitors", value: "12", change: "-5%", icon: "people-outline", color: "#F59E0B" },
-    { title: "Room Occupancy", value: "85%", change: "+2%", icon: "bed-outline", color: "#2563EB" },
-    { title: "Pending Approvals", value: "7", change: "0%", icon: "time-outline", color: "#EF4444" },
+    { title: "Check-ins", value: "24", icon: "log-in-outline", color: "#10B981" },
+    { title: "Active Visitors", value: "12", icon: "people-outline", color: "#F59E0B" },
+    { title: "Room Occupancy", value: "85%", icon: "bed-outline", color: "#2563EB" },
+    { title: "Pending Approvals", value: "7", icon: "time-outline", color: "#EF4444" },
   ];
 
   const recentActivities = [
-    { id: 1, title: "Room 204 Checked out", subtitle: "Sarah Jenkins", time: "12 mins ago", icon: "log-out-outline", color: "#10B981" },
-    { id: 2, title: "New Booking: John Doe", subtitle: "Deluxe Suite", time: "45 mins ago", icon: "book-outline", color: "#3B82F6" },
+    { id: 1, title: "Room 204 Checked out", subtitle: "Jose Santino ", time: "12 mins ago", icon: "log-out-outline", color: "#10B981" },
+    { id: 2, title: "New Check-in: Juan Tamad", subtitle: "Deluxe Suite", time: "45 mins ago", icon: "book-outline", color: "#3B82F6" },
     { id: 3, title: "Maintenance Required", subtitle: "Room 412", time: "2 hours ago", icon: "construct-outline", color: "#F59E0B" },
-    { id: 4, title: "Payment Received", subtitle: "Room 105 - $350", time: "3 hours ago", icon: "card-outline", color: "#8B5CF6" },
-    { id: 5, title: "New Visitor Registration", subtitle: "Michael Chen", time: "5 hours ago", icon: "person-add-outline", color: "#10B981" },
   ];
 
   const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
@@ -171,56 +169,69 @@ const Dashboard = ({ navigation }) => {
   const maxOccupancy = Math.max(...occupancyData);
 
   const menuItems = [
-    { name: "Dashboard", icon: "grid-outline", screen: "Dashboard" },
-    { name: "Guests", icon: "people-outline", screen: "Guests" },
-    { name: "Rooms", icon: "bed-outline", screen: "Rooms" },
-    { name: "Visitors", icon: "person-add-outline", screen: "Visitors" },
-    { name: "Payments", icon: "card-outline", screen: "Payments" },
-    { name: "Settings", icon: "settings-outline", screen: "Settings" },
+    { name: "Dashboard", icon: "grid-outline", screen: "Dashboard", color: "#3B82F6" },
+    { name: "Guests", icon: "people-outline", screen: "Guests", color: "#10B981" },
+    { name: "Rooms", icon: "bed-outline", screen: "Rooms", color: "#8B5CF6" },
+    { name: "Visitors", icon: "person-add-outline", screen: "Visitors", color: "#F59E0B" },
+    { name: "Payments", icon: "card-outline", screen: "Payments", color: "#EF4444" },
   ];
 
-  // Sidebar component for reuse
+  // Sidebar component
   const SidebarContent = () => (
     <>
-      <View style={styles.sidebarHeader}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="business-outline" size={24} color="#fff" />
+      {/* Top Light Gray Section with Logo - Aligned with header */}
+      <View style={styles.sidebarTopLight}>
+        <View style={styles.sidebarLogoContainer}>
+          <View style={styles.logoWrapper}>
+            <View style={styles.hotelIconCircle}>
+              <Ionicons name="business-outline" size={28} color="#2563EB" />
+            </View>
+            <Image
+              source={require("../assets/logo.png")}
+              style={styles.sidebarLogo}
+              resizeMode="contain"
+            />
           </View>
-          <View>
-            <Text style={styles.logoName}>PROSERV</Text>
-            <Text style={styles.logoSubtitle}>Hotel</Text>
-          </View>
+          {!isSidebarPermanent && (
+            <TouchableOpacity onPress={closeSidebar} style={styles.closeButton}>
+              <Ionicons name="close-outline" size={24} color="#1F2937" />
+            </TouchableOpacity>
+          )}
         </View>
-        {!isSidebarPermanent && (
-          <TouchableOpacity onPress={closeSidebar} style={styles.closeButton}>
-            <Ionicons name="close-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-        )}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.menuContainer}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={() => handleNavigation(item.screen)}
-            >
-              <View style={styles.menuIcon}>
-                <Ionicons name={item.icon} size={22} color="#9CA3AF" />
-              </View>
-              <Text style={styles.menuText}>{item.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      {/* Dark Section */}
+      <View style={styles.sidebarDarkSection}>
+        {/* Horizontal Line Separator */}
+        <View style={styles.separatorLine} />
 
-      <View style={styles.sidebarFooter}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#EF4444" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        {/* Navigation Menu */}
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.menuScrollView}>
+          <View style={styles.menuContainer}>
+            {menuItems.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.menuItem}
+                onPress={() => handleNavigation(item.screen)}
+              >
+                <View style={[styles.menuIcon, { backgroundColor: `${item.color}20`, borderRadius: 8, padding: 6 }]}>
+                  <Ionicons name={item.icon} size={20} color={item.color} />
+                </View>
+                <Text style={styles.menuText}>{item.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
+        {/* Settings at the bottom */}
+        <View style={styles.sidebarFooter}>
+          <TouchableOpacity style={styles.settingsButton} onPress={() => handleNavigation("Settings")}>
+            <View style={[styles.menuIcon, { backgroundColor: "#374151", borderRadius: 8, padding: 6 }]}>
+              <Ionicons name="settings-outline" size={20} color="#9CA3AF" />
+            </View>
+            <Text style={styles.settingsText}>Settings</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );
@@ -236,7 +247,7 @@ const Dashboard = ({ navigation }) => {
 
       {/* Main Content */}
       <View style={[styles.mainContent, isSidebarPermanent && styles.mainContentWithSidebar]}>
-        {/* Header */}
+        {/* Header - Narrower */}
         <View style={styles.header}>
           {!isSidebarPermanent && (
             <TouchableOpacity style={styles.menuButton} onPress={toggleSidebar}>
@@ -260,9 +271,17 @@ const Dashboard = ({ navigation }) => {
           </View>
         </View>
 
+        {/* Header Border */}
+        <View style={styles.headerBorder} />
+
         {/* Content */}
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+
+            {/* Dashboard Title - Added here before stats */}
+            <View style={styles.mainDashboardTitleContainer}>
+              <Text style={styles.mainDashboardTitle}>Dashboard</Text>
+            </View>
 
             {/* Stats Grid */}
             <View style={styles.statsGrid}>
@@ -273,29 +292,30 @@ const Dashboard = ({ navigation }) => {
                   </View>
                   <Text style={styles.statValue}>{stat.value}</Text>
                   <Text style={styles.statTitle}>{stat.title}</Text>
-                  <View style={[styles.statChange, { backgroundColor: stat.change.includes("+") ? "#10B98115" : "#EF444415" }]}>
-                    <Text style={[styles.statChangeText, { color: stat.change.includes("+") ? "#10B981" : "#EF4444" }]}>
-                      {stat.change}
-                    </Text>
-                  </View>
+                  {/* Percentage change removed */}
                 </View>
               ))}
             </View>
 
-            {/* Two Column Layout for Large Screens */}
+            {/* Two Column Layout */}
             <View style={styles.twoColumnLayout}>
               {/* Left Column - Occupancy Trends */}
               <View style={styles.leftColumn}>
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Occupancy Trends</Text>
+                  <Text style={styles.sectionTitle}>Occupancy Trends (Last 12 Months)</Text>
                   <View style={styles.chartCard}>
                     <View style={styles.chartWrapper}>
                       <View style={styles.yAxis}>
-                        <Text style={styles.yLabel}>100%</Text>
-                        <Text style={styles.yLabel}>75%</Text>
-                        <Text style={styles.yLabel}>50%</Text>
-                        <Text style={styles.yLabel}>25%</Text>
-                        <Text style={styles.yLabel}>0%</Text>
+                        <Text style={styles.yLabel}>100</Text>
+                        <Text style={styles.yLabel}>90</Text>
+                        <Text style={styles.yLabel}>80</Text>
+                        <Text style={styles.yLabel}>70</Text>
+                        <Text style={styles.yLabel}>60</Text>
+                        <Text style={styles.yLabel}>50</Text>
+                        <Text style={styles.yLabel}>40</Text>
+                        <Text style={styles.yLabel}>30</Text>
+                        <Text style={styles.yLabel}>20</Text>
+                        <Text style={styles.yLabel}>10</Text>
                       </View>
 
                       <View style={styles.barsContainer}>
@@ -304,7 +324,7 @@ const Dashboard = ({ navigation }) => {
                             <View
                               style={[
                                 styles.bar,
-                                { height: (value / maxOccupancy) * 140 },
+                                { height: (value / maxOccupancy) * 160 },
                               ]}
                             />
                             <Text style={styles.barLabel}>{months[index]}</Text>
@@ -322,7 +342,7 @@ const Dashboard = ({ navigation }) => {
                   <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Recent Activity</Text>
                     <TouchableOpacity>
-                      <Text style={styles.viewAllText}>View All</Text>
+                      <Text style={styles.viewAllText}>View All Activity</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -337,37 +357,6 @@ const Dashboard = ({ navigation }) => {
                       </View>
                     </View>
                   ))}
-                </View>
-              </View>
-            </View>
-
-            {/* Additional Stats Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Quick Overview</Text>
-              <View style={styles.overviewCards}>
-                <View style={styles.overviewCard}>
-                  <Ionicons name="calendar-outline" size={32} color="#2563EB" />
-                  <Text style={styles.overviewNumber}>156</Text>
-                  <Text style={styles.overviewLabel}>Total Bookings</Text>
-                  <Text style={styles.overviewTrend}>↑ 12% this month</Text>
-                </View>
-                <View style={styles.overviewCard}>
-                  <Ionicons name="trending-up-outline" size={32} color="#10B981" />
-                  <Text style={styles.overviewNumber}>₱245K</Text>
-                  <Text style={styles.overviewLabel}>Revenue</Text>
-                  <Text style={styles.overviewTrend}>↑ 18% this month</Text>
-                </View>
-                <View style={styles.overviewCard}>
-                  <Ionicons name="people-outline" size={32} color="#F59E0B" />
-                  <Text style={styles.overviewNumber}>892</Text>
-                  <Text style={styles.overviewLabel}>Total Guests</Text>
-                  <Text style={styles.overviewTrend}>This year</Text>
-                </View>
-                <View style={styles.overviewCard}>
-                  <Ionicons name="star-outline" size={32} color="#8B5CF6" />
-                  <Text style={styles.overviewNumber}>98%</Text>
-                  <Text style={styles.overviewLabel}>Satisfaction Rate</Text>
-                  <Text style={styles.overviewTrend}>Based on 342 reviews</Text>
                 </View>
               </View>
             </View>
@@ -419,7 +408,6 @@ const styles = StyleSheet.create({
   },
   permanentSidebar: {
     width: 280,
-    backgroundColor: "#1F2937",
     height: "100%",
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 0 },
@@ -434,17 +422,19 @@ const styles = StyleSheet.create({
   mainContentWithSidebar: {
     flex: 1,
   },
-  // Header
+  // Header - Narrower
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: isLargeScreen ? 32 : 20,
-    paddingTop: isLargeScreen ? 40 : 60,
-    paddingBottom: 20,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    paddingTop: isLargeScreen ? 20 : 40,
+    paddingBottom: 18,
+    backgroundColor: "#1F2937",
+  },
+  headerBorder: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
   },
   menuButton: {
     padding: 8,
@@ -454,9 +444,14 @@ const styles = StyleSheet.create({
     marginLeft: isLargeScreen ? 0 : 12,
   },
   welcomeText: {
-    fontSize: isLargeScreen ? 20 : 18,
+    fontSize: isLargeScreen ? 18 : 16,
     fontWeight: "600",
-    color: "#1F2937",
+    color: "#e8e1e1",
+  },
+  dateText: {
+    fontSize: 12,
+    color: "#bfc8d9",
+    marginTop: 2,
   },
   headerRight: {
     flexDirection: "row",
@@ -495,14 +490,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  // Content
   content: {
     padding: isLargeScreen ? 32 : 20,
   },
-  dateText: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 4,
+  // Main Dashboard Title
+  mainDashboardTitleContainer: {
+    marginBottom: 24,
+  },
+  mainDashboardTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#1F2937",
   },
   statsGrid: {
     flexDirection: "row",
@@ -541,16 +539,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
     marginBottom: 8,
-  },
-  statChange: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  statChangeText: {
-    fontSize: 11,
-    fontWeight: "600",
   },
   section: {
     marginBottom: 32,
@@ -597,10 +585,9 @@ const styles = StyleSheet.create({
     height: 200,
   },
   yAxis: {
-    width: 40,
+    width: 35,
     justifyContent: "space-between",
     paddingRight: 8,
-    paddingBottom: 20,
   },
   yLabel: {
     fontSize: 10,
@@ -662,39 +649,97 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6B7280",
   },
-  overviewCards: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
+  // Sidebar Styles - Two Sections
+  sidebarTopLight: {
+    backgroundColor: "#fafafa",
+    paddingTop: 1,
   },
-  overviewCard: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 20,
-    flex: isLargeScreen ? 1 : 0,
-    minWidth: isLargeScreen ? 200 : (width - 80) / 2,
+  sidebarDarkSection: {
+    backgroundColor: "#1F2937",
+    flex: 1,
+  },
+  sidebarLogoContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  logoWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  hotelIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
-  overviewNumber: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1F2937",
-    marginTop: 12,
-    marginBottom: 4,
+  sidebarLogo: {
+    width: 140,  // Increased from 120
+    height: 56,  // Increased from 48
   },
-  overviewLabel: {
-    fontSize: 14,
-    color: "#6B7280",
+  closeButton: {
+    padding: 5,
+  },
+  separatorLine: {
+    height: 1,
+    backgroundColor: "#374151",
+    marginHorizontal: 20,
+    marginBottom: 16,
+  },
+  menuScrollView: {
+    flex: 1,
+  },
+  menuContainer: {
+    paddingTop: 10,
+    paddingHorizontal: 16,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     marginBottom: 8,
   },
-  overviewTrend: {
-    fontSize: 12,
-    color: "#10B981",
+  menuIcon: {
+    width: 36,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  menuText: {
+    fontSize: 16,
+    color: "#E5E7EB",
+    fontWeight: "500",
+  },
+  sidebarFooter: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#374151",
+  },
+  settingsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  settingsText: {
+    fontSize: 16,
+    color: "#9CA3AF",
+    marginLeft: 12,
+    fontWeight: "500",
   },
   // Overlay
   overlay: {
@@ -717,88 +762,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: width * 0.75,
     maxWidth: 320,
-    backgroundColor: "#1F2937",
     zIndex: 999,
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 10,
-  },
-  sidebarHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 30,
-    borderBottomWidth: 1,
-    borderBottomColor: "#374151",
-  },
-  logoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  logoCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#2563EB",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  logoSubtitle: {
-    fontSize: 12,
-    color: "#9CA3AF",
-  },
-  closeButton: {
-    padding: 5,
-  },
-  menuContainer: {
-    paddingTop: 20,
-    paddingHorizontal: 16,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  menuIcon: {
-    width: 32,
-    marginRight: 12,
-  },
-  menuText: {
-    fontSize: 16,
-    color: "#9CA3AF",
-    fontWeight: "500",
-  },
-  sidebarFooter: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#374151",
-    marginTop: "auto",
-  },
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-  },
-  logoutText: {
-    fontSize: 16,
-    color: "#EF4444",
-    marginLeft: 12,
-    fontWeight: "500",
   },
 });
 

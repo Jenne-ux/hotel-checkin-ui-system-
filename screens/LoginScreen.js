@@ -9,19 +9,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
   StatusBar,
   Modal,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
-const isWeb = Platform.OS === 'web';
+const { width } = Dimensions.get("window");
 const isLargeScreen = width >= 1024;
 const isTablet = width >= 768 && width < 1024;
 
-// Custom Keyboard Component with blue highlight on click
+// ---------- Custom Keyboard Component (unchanged) ----------
 const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 50, type = 'alphabetic' }) => {
   const [inputValue, setInputValue] = useState(value);
   const [shiftActive, setShiftActive] = useState(false);
@@ -184,7 +182,7 @@ const CustomKeyboard = ({ visible, onClose, onKeyPress, value = '', maxLength = 
   );
 };
 
-// Custom TextInput Component with Label
+// ---------- Custom TextInput Component (unchanged) ----------
 const CustomTextInput = ({ 
   label,
   placeholder, 
@@ -273,13 +271,15 @@ const CustomTextInput = ({
   );
 };
 
+// ---------- Main LoginScreen ----------
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
   const [errors, setErrors] = useState({});
-  
+  const [loginError, setLoginError] = useState(""); // For invalid credentials
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
@@ -309,23 +309,40 @@ const LoginScreen = ({ navigation }) => {
     ]).start();
   }, []);
 
+  // Validation for empty fields
   const validateForm = () => {
     let newErrors = {};
     if (!username.trim()) newErrors.username = "Username is required";
     if (!password.trim()) newErrors.password = "Password is required";
     setErrors(newErrors);
+    setLoginError(""); // Clear any previous login error
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle login attempt
   const handleLogin = () => {
     if (validateForm()) {
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        
+        // Check credentials
+        const isUsernameCorrect = username === ADMIN_USERNAME;
+        const isPasswordCorrect = password === ADMIN_PASSWORD;
+        
+        if (isUsernameCorrect && isPasswordCorrect) {
           navigation.replace("Dashboard");
         } else {
-          Alert.alert("Error", "Invalid admin credentials\nUsername: admin\nPassword: admin123");
+          // Determine appropriate error message
+          if (!isUsernameCorrect && !isPasswordCorrect) {
+            setLoginError("Invalid username or password");
+          } else if (!isUsernameCorrect) {
+            setLoginError("Invalid username");
+          } else if (!isPasswordCorrect) {
+            setLoginError("Incorrect password");
+          } else {
+            setLoginError("Invalid credentials");
+          }
         }
       }, 1000);
     }
@@ -335,29 +352,53 @@ const LoginScreen = ({ navigation }) => {
     navigation.replace("Welcome");
   };
 
+  // Clear login error when user starts typing in either field
+  const handleUsernameChange = (text) => {
+    setUsername(text);
+    if (loginError) setLoginError("");
+    if (errors.username) setErrors({ ...errors, username: null });
+  };
+
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    if (loginError) setLoginError("");
+    if (errors.password) setErrors({ ...errors, password: null });
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
-      
       <View style={styles.backgroundGradient} />
-      
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            
-            {/* Main Card Container - Two columns on web, single on mobile */}
+          <Animated.View
+            style={[
+              styles.content,
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+            ]}
+          >
             <View style={styles.cardContainer}>
-              {/* Logo Section - Left side on web, top on mobile */}
-              <Animated.View style={[styles.logoSection, { transform: [{ scale: scaleAnim }] }]}>
+              {/* Logo Section */}
+              <Animated.View
+                style={[
+                  styles.logoSection,
+                  { transform: [{ scale: scaleAnim }] },
+                ]}
+              >
                 <View style={styles.logoCircle}>
-                  <Ionicons name="business-outline" size={isLargeScreen ? 60 : 50} color="#2563EB" />
+                  <Ionicons
+                    name="business-outline"
+                    size={isLargeScreen ? 60 : 50}
+                    color="#2563EB"
+                  />
                 </View>
                 <View style={styles.brandContainer}>
                   <Text style={styles.brandPro}>PRO</Text>
@@ -365,11 +406,18 @@ const LoginScreen = ({ navigation }) => {
                   <Text style={styles.brandHotel}>Hotel</Text>
                 </View>
                 <View style={styles.dividerLight} />
-                <Text style={styles.tagline}>Providing Excellent Service to Clients</Text>
+                <Text style={styles.tagline}>
+                  Providing Excellent Service to Clients
+                </Text>
               </Animated.View>
 
-              {/* Login Form Section - Right side on web, bottom on mobile */}
-              <Animated.View style={[styles.loginSection, { transform: [{ scale: scaleAnim }] }]}>
+              {/* Login Form Section */}
+              <Animated.View
+                style={[
+                  styles.loginSection,
+                  { transform: [{ scale: scaleAnim }] },
+                ]}
+              >
                 <Text style={styles.cardTitle}>Login</Text>
                 <View style={styles.titleUnderline} />
 
@@ -377,15 +425,12 @@ const LoginScreen = ({ navigation }) => {
                   label="Username"
                   placeholder="Enter your username"
                   value={username}
-                  onChangeText={(text) => {
-                    setUsername(text);
-                    if (errors.username) setErrors({...errors, username: null});
-                  }}
+                  onChangeText={handleUsernameChange}
                   icon="person-outline"
                   keyboardType="alphabetic"
                   error={errors.username}
-                  focused={focusedInput === 'username'}
-                  onFocus={() => setFocusedInput('username')}
+                  focused={focusedInput === "username"}
+                  onFocus={() => setFocusedInput("username")}
                   onBlur={() => setFocusedInput(null)}
                 />
 
@@ -393,21 +438,21 @@ const LoginScreen = ({ navigation }) => {
                   label="Password"
                   placeholder="Enter your password"
                   value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    if (errors.password) setErrors({...errors, password: null});
-                  }}
+                  onChangeText={handlePasswordChange}
                   icon="lock-closed-outline"
                   keyboardType="numeric"
                   secureTextEntry={true}
-                  error={errors.password}
-                  focused={focusedInput === 'password'}
-                  onFocus={() => setFocusedInput('password')}
+                  error={errors.password || loginError}  // Show login error here
+                  focused={focusedInput === "password"}
+                  onFocus={() => setFocusedInput("password")}
                   onBlur={() => setFocusedInput(null)}
                 />
 
-                <TouchableOpacity 
-                  style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                <TouchableOpacity
+                  style={[
+                    styles.loginButton,
+                    loading && styles.loginButtonDisabled,
+                  ]}
                   onPress={handleLogin}
                   disabled={loading}
                   activeOpacity={0.8}
@@ -425,7 +470,7 @@ const LoginScreen = ({ navigation }) => {
                   <View style={styles.divider} />
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.guestButton}
                   onPress={handleGuestAccess}
                   activeOpacity={0.8}
@@ -448,6 +493,7 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
+// ---------- Styles (unchanged) ----------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
