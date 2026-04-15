@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import LoginScreen from './screens/LoginScreen';
 import Dashboard from './screens/Dashboard';
+import Guests from './screens/Guests';
 import WelcomeScreen from "./screens/Welcomescreen";  
 import Rooms from "./screens/Rooms";
 import RoomDetails from "./screens/Details";
@@ -16,6 +17,7 @@ import Approval from './screens/Approval';
 import NewVisitorReg from './screens/NewVisitorReg';
 import NewCheckin from "./screens/NewCheckin";
 
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -26,6 +28,7 @@ export default function App() {
       <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen name="Guests" component={Guests} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Rooms" component={Rooms} />
         <Stack.Screen name="Details" component={RoomDetails} />
@@ -35,7 +38,7 @@ export default function App() {
         <Stack.Screen name="Directions" component={Directions} />
         <Stack.Screen name="Visitors" component={Visitors} />
         <Stack.Screen name="Approval" component={Approval} />
-        <Stack.Screen name="NewVisitorReg" component={NewVisitorReg} />
+        <Stack.Screen name="NewVisitorReg" component= {NewVisitorReg} />
         <Stack.Screen name="NewCheckin" component={NewCheckin} />
       </Stack.Navigator>
     </NavigationContainer>
